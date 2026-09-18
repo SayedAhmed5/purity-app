@@ -1,0 +1,4233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="متتبع الصلوات المفروضة والمتراكمة - يعمل دون إنترنت">
+    <meta name="theme-color" content="#1E3A1E">
+    <!-- iOS "Add to Home Screen" support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="الطريق للنقاء">
+    <title>الطريق للنقاء - متتبع الصلوات المفروضة</title>
+    <!--
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ الطريق للنقاء - تطبيق متتبع الصلوات المفروضة والمتراكمة         ┃
+    ┃ معد للمسلمين الشيعة الاثني عشريين                              ┃
+    ┃ المصادر المستخدمة:                                             ┃
+    ┃ • القرآن الكريم (الآيات القرآنية المباركة)                     ┃
+    ┃ • الكافي - الشيخ الكليني                                       ┃
+    ┃ • من لا يحضره الفقيه - الشيخ الصدوق                             ┃
+    ┃ • التهذيب - الشيخ الطوسي                                       ┃
+    ┃ • أحاديث أهل البيت عليهم السلام                                 ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1E3A1E;
+            --primary-medium: #2D5A27;
+            --primary-light: #4A7A3F;
+            --accent-gold: #C5A059;
+            --bg-light: #FDFBF7;
+            --text-dark: #2C3E50;
+            --text-light: #5A6B7A;
+            --border-light: #E8E4DC;
+            --success: #6B9E6E;
+            --warning: #D4A574;
+            --shadow: 0 8px 32px rgba(29, 58, 30, 0.08);
+            --shadow-sm: 0 2px 8px rgba(29, 58, 30, 0.04);
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: 'Cairo', 'Noto Sans Arabic', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+            color: #fff;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #B89550 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(197, 160, 89, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 28px rgba(197, 160, 89, 0.5);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            padding: 2rem 1.5rem;
+            max-width: 500px;
+            max-height: 88vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            color: var(--primary-medium);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-step {
+            display: none;
+        }
+
+        .modal-step.active {
+            display: block;
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-btn {
+            padding: 1rem;
+            border: 2px solid var(--border-light);
+            background: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-dark);
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-medium);
+            background: rgba(45, 90, 39, 0.05);
+        }
+
+        .option-btn.selected {
+            background: var(--primary-medium);
+            color: #fff;
+            border-color: var(--primary-medium);
+        }
+
+        .sub-options {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            animation: slideDown 0.3s ease;
+        }
+
+        .sub-options.show {
+            display: grid;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: var(--primary-medium);
+            background: rgba(45, 90, 39, 0.02);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-medium);
+            color: #fff;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(30, 58, 30, 0.2);
+        }
+
+        .btn-secondary {
+            background: var(--border-light);
+            color: var(--text-dark);
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #ddd;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger {
+            background: #D64545;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #B83030;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            padding: 1.5rem;
+            background: #fff;
+            margin: 1rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .progress-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-medium) 0%, var(--accent-gold) 100%);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem;
+            margin: 0 1rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        /* User Profile Card */
+        .profile-card {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+            color: #fff;
+            padding: 2rem 1.5rem;
+            margin: 1rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .profile-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            /* auto-fit keeps the row balanced when the shield tile is hidden */
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .profile-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .profile-stat-label {
+            font-size: 0.75rem;
+            opacity: 0.85;
+        }
+
+        /* Achievements Section */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem;
+            margin: 0 1rem;
+        }
+
+        .achievement-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            border-color: var(--accent-gold);
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.05) 0%, rgba(45, 90, 39, 0.05) 100%);
+        }
+
+        .achievement-card.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievement-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 0.3rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* History Log */
+        .history-item {
+            background: #fff;
+            padding: 1rem;
+            margin: 0.5rem 1rem;
+            border-radius: 10px;
+            border-right: 4px solid var(--accent-gold);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-prayer {
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 0.3rem;
+        }
+
+        .history-meta {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .history-btn {
+            padding: 0.5rem 0.8rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .history-edit {
+            background: var(--primary-light);
+            color: #fff;
+        }
+
+        .history-delete {
+            background: #D64545;
+            color: #fff;
+        }
+
+        /* Control Panel */
+        .panel-section {
+            background: #fff;
+            margin: 1rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 0.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-medium);
+            background: rgba(45, 90, 39, 0.02);
+        }
+
+        /* Motivational Card */
+        .motivational-card {
+            background: linear-gradient(135deg, var(--primary-medium) 0%, var(--primary-light) 100%);
+            color: #fff;
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .motivational-title {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .motivational-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .motivational-source {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        /* Planning Section */
+        .planning-form {
+            background: #fff;
+            margin: 1rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .planning-info {
+            background: rgba(45, 90, 39, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border-right: 4px solid var(--primary-medium);
+        }
+
+        .planning-info-text {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: var(--primary-medium);
+            color: #fff;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease;
+            z-index: 150;
+            font-weight: 600;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+        }
+
+        /* Settings */
+        .settings-option {
+            background: #fff;
+            padding: 1.5rem;
+            margin: 0.5rem 1rem;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .settings-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .achievements-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                border-radius: 16px 16px 0 0;
+                padding: 1.5rem 1rem;
+            }
+
+            .fab {
+                width: 60px;
+                height: 60px;
+                font-size: 1.2rem;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .profile-stats {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Streak Badge */
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        /* Freeze Shield */
+        .freeze-shield {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-gold);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Export Card */
+        .export-card {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #B89550 100%);
+            color: #fff;
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .export-card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .export-card p {
+            margin-bottom: 1rem;
+            opacity: 0.95;
+        }
+
+        /* Tab Bottom Padding Fix */
+        .tab-content {
+            padding-bottom: 1rem;
+        }
+
+        /* Header Icon Buttons (hamburger + settings) */
+        .icon-btn {
+            position: absolute;
+            top: 1.2rem;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            z-index: 5;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .hamburger-btn {
+            right: 1rem;
+        }
+
+        .settings-btn {
+            left: 1rem;
+        }
+
+        .header {
+            position: sticky;
+            padding-top: 1rem;
+        }
+
+        /* Header Progress Bar */
+        .header-progress {
+            margin-top: 1rem;
+            padding: 0 0.5rem;
+        }
+
+        .header-progress-percent {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 0.4rem;
+        }
+
+        .header-progress .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            margin-bottom: 0.4rem;
+        }
+
+        .header-progress .progress-fill {
+            background: linear-gradient(90deg, var(--accent-gold) 0%, #fff 100%);
+        }
+
+        .header-progress-text {
+            font-size: 0.85rem;
+            color: #fff;
+            opacity: 0.95;
+            font-weight: 600;
+        }
+
+        /* Side Menu */
+        .side-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 300;
+        }
+
+        .side-menu-overlay.active {
+            display: block;
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -260px;
+            width: 240px;
+            height: 100%;
+            background: #fff;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            z-index: 301;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding-top: 1.5rem;
+        }
+
+        .side-menu.active {
+            right: 0;
+        }
+
+        .side-menu-title {
+            padding: 0 1.2rem 1rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            border-bottom: 2px solid var(--border-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .side-menu button.nav-btn {
+            text-align: right;
+            padding: 1rem 1.2rem;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            border-right: 4px solid transparent;
+        }
+
+        .side-menu button.nav-btn.active {
+            color: var(--primary-medium);
+            border-right-color: var(--accent-gold);
+            background: rgba(45, 90, 39, 0.05);
+        }
+
+        /* Unified Stats Panel */
+        .unified-stats-panel {
+            background: #fff;
+            margin: 1rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .unified-stats-title {
+            text-align: center;
+            font-weight: 700;
+            color: var(--primary-medium);
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .unified-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .unified-stat {
+            text-align: center;
+            padding: 1.2rem 0.5rem;
+            border-right: 1px solid var(--border-light);
+        }
+
+        .unified-stat:last-child {
+            border-right: none;
+        }
+
+        .unified-stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 0.3rem;
+        }
+
+        .unified-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        @media (max-width: 400px) {
+            .unified-stat-value {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* ===== Header settings button active state ===== */
+        .icon-btn.active {
+            background: var(--accent-gold);
+            color: #fff;
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.35);
+        }
+
+        /* ===== History filter bar ===== */
+        .filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            flex: 1;
+            min-width: 90px;
+            padding: 0.6rem 0.5rem;
+            border: 2px solid var(--border-light);
+            background: #fff;
+            border-radius: 20px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-medium);
+            border-color: var(--primary-medium);
+            color: #fff;
+        }
+
+        /* ===== History entry kinds ===== */
+        .history-item.kind-completed {
+            border-right: 4px solid var(--success);
+        }
+
+        .history-item.kind-adjust {
+            border-right: 4px solid var(--accent-gold);
+        }
+
+        .entry-badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-left: 0.4rem;
+        }
+
+        .badge-completed {
+            background: rgba(107, 158, 110, 0.15);
+            color: var(--success);
+        }
+
+        .badge-adjust {
+            background: rgba(197, 160, 89, 0.18);
+            color: #96742F;
+        }
+
+        .badge-xp {
+            background: rgba(45, 90, 39, 0.1);
+            color: var(--primary-medium);
+        }
+
+        /* ===== Remaining-per-prayer ledger ===== */
+        .ledger-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+        }
+
+        .ledger-cell {
+            background: rgba(45, 90, 39, 0.04);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 0.7rem 0.4rem;
+            text-align: center;
+        }
+
+        .ledger-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .ledger-remaining {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin: 0.2rem 0;
+        }
+
+        .ledger-sub {
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        .ledger-cell.clear .ledger-remaining {
+            color: var(--success);
+        }
+
+        /* ===== Prayer count pill inside the modal options ===== */
+        .option-btn .count-pill {
+            display: block;
+            margin-top: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* ===== Weekday chips (buffer days) ===== */
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .chip {
+            padding: 0.4rem 0.75rem;
+            border-radius: 18px;
+            border: 2px solid var(--border-light);
+            background: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip.active {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: #fff;
+        }
+
+        .hint-text {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-top: 0.4rem;
+        }
+
+        /* ===== Daily schedule rows ===== */
+        .schedule-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 0.9rem;
+            background: #f7f6f2;
+            border-radius: 10px;
+            margin-bottom: 0.45rem;
+            font-size: 0.88rem;
+        }
+
+        .schedule-row.today {
+            background: rgba(45, 90, 39, 0.1);
+            border: 1px solid var(--primary-light);
+        }
+
+        .schedule-row.buffer {
+            background: rgba(212, 165, 116, 0.15);
+            color: #8A6B3E;
+        }
+
+        .schedule-target {
+            font-weight: 700;
+            color: var(--primary-medium);
+        }
+
+        .plan-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .plan-tag {
+            background: rgba(45, 90, 39, 0.08);
+            color: var(--primary-medium);
+            border-radius: 12px;
+            padding: 0.25rem 0.7rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-row .btn {
+            flex: 1;
+            min-width: 120px;
+        }
+
+
+        /* ===== Profile stat: clickable challenge tile ===== */
+        .profile-stat.clickable {
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background 0.25s ease, transform 0.15s ease;
+        }
+
+        .profile-stat.clickable:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .profile-stat.clickable:active {
+            transform: translateY(0);
+        }
+
+        .challenge-sub {
+            display: block;
+            font-size: 0.68rem;
+            opacity: 0.85;
+            margin-top: 0.15rem;
+        }
+
+        /* ===== Challenge panel ===== */
+        .challenge-headline {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+
+        .challenge-note {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 0.4rem;
+            direction: ltr;
+            font-variant-numeric: tabular-nums;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            letter-spacing: 1px;
+            margin: 0.8rem 0;
+        }
+
+        .countdown.urgent {
+            color: #C0392B;
+        }
+
+        .challenge-status {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .challenge-badge {
+            display: inline-block;
+            padding: 0.3rem 0.9rem;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: rgba(45, 90, 39, 0.1);
+            color: var(--primary-medium);
+        }
+
+        .challenge-badge.done {
+            background: rgba(107, 158, 110, 0.18);
+            color: var(--success);
+        }
+
+        .challenge-badge.expired {
+            background: rgba(192, 57, 43, 0.12);
+            color: #C0392B;
+        }
+
+        /* ===== Type availability pill inside option buttons ===== */
+        .option-btn .type-pill {
+            display: block;
+            margin-top: 0.3rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* ===== Ledger type breakdown ===== */
+        .ledger-types {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+            line-height: 1.5;
+        }
+
+        /* ===== Planning multi-select targets ===== */
+        .target-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .target-row label {
+            flex: 1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .target-row .input-field {
+            width: 110px;
+            margin: 0;
+        }
+
+        .target-row .target-hint {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            width: 70px;
+            text-align: center;
+        }
+
+        /* ===== Plan summary card (dashboard) ===== */
+        .plan-summary-card {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            color: #fff;
+            margin: 1rem;
+            padding: 1.3rem;
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .plan-summary-card:hover { transform: translateY(-2px); }
+
+        .plan-summary-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .plan-summary-head small {
+            font-weight: 600;
+            opacity: 0.85;
+            font-size: 0.75rem;
+        }
+
+        .plan-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+
+        .plan-summary-cell {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 0.7rem 0.4rem;
+            text-align: center;
+        }
+
+        .plan-summary-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            line-height: 1.4;
+        }
+
+        .plan-summary-label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        .plan-summary-card .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .plan-summary-card .progress-fill {
+            background: linear-gradient(90deg, var(--accent-gold) 0%, #fff 100%);
+        }
+
+        .plan-summary-foot {
+            margin-top: 0.6rem;
+            font-size: 0.78rem;
+            opacity: 0.92;
+            text-align: center;
+        }
+
+        /* ===== Rebalance modal ===== */
+        .rebalance-section {
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .rebalance-section-title {
+            font-weight: 700;
+            color: var(--primary-medium);
+            margin-bottom: 0.3rem;
+            font-size: 0.95rem;
+        }
+
+        .rebalance-or {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .schedule-breakdown {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            margin-top: 0.15rem;
+        }
+
+        .schedule-row > span:first-child { line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <button class="icon-btn hamburger-btn" id="hamburgerBtn" onclick="openSideMenu()" aria-label="القائمة">☰</button>
+        <button class="icon-btn settings-btn" id="settingsBtn" onclick="openSettingsPage()" aria-label="الإعدادات">⚙️</button>
+        <h1>الطريق للنقاء</h1>
+        <div class="header-progress">
+            <div class="header-progress-percent" id="headerProgressPercent">0%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="header-progress-text" id="progressText">0 من 0 صلوات</div>
+        </div>
+    </div>
+
+    <!-- Side Menu (Hamburger) -->
+    <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-title">القائمة</div>
+        <button class="nav-btn active" data-tab="home">الرئيسية</button>
+        <button class="nav-btn" data-tab="planning">التخطيط</button>
+        <button class="nav-btn" data-tab="control">لوحة التحكم</button>
+        <button class="nav-btn" data-tab="achievements">الإنجازات</button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Home Tab -->
+        <div id="home" class="tab-content active">
+            <!-- Active Plan Summary -->
+            <div class="plan-summary-card" id="planSummaryCard" style="display: none;"
+                 onclick="switchTab('planning')" role="button" tabindex="0"></div>
+
+            <!-- Motivational Card -->
+            <div class="motivational-card" id="motivationalCard">
+                <div class="motivational-title">📖 الحكمة اليومية</div>
+                <div class="motivational-text" id="motivationalText">
+                    حافظوا على الصلوات والصلاة الوسطى وقوموا لله قانتين
+                </div>
+                <div class="motivational-source" id="motivationalSource">سورة البقرة: 238</div>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-title" id="userRank">مبتدئ</div>
+                <div class="profile-subtitle" id="userLevel">المستوى 1</div>
+                <div class="profile-stats" id="profileStats">
+                    <div class="profile-stat clickable" id="challengeStat" onclick="openChallengeModal()" role="button" tabindex="0">
+                        <span class="profile-stat-value" id="challengeValue">ابدأ</span>
+                        <span class="profile-stat-label">التحدي اليومي ⚡<span class="challenge-sub" id="challengeSub">اضغط للبدء</span></span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat-value" id="streakDisplay">0</span>
+                        <span class="profile-stat-label">الأيام المتتالية 🔥</span>
+                    </div>
+                    <div class="profile-stat" id="freezeStat" style="display: none;">
+                        <span class="profile-stat-value" id="freezeCount">0</span>
+                        <span class="profile-stat-label">حماية الشعلة 🛡️</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unified Stats Panel -->
+            <div class="unified-stats-panel">
+                <div class="unified-stats-title">لوحة الإحصائيات</div>
+                <div class="unified-stats-grid">
+                    <div class="unified-stat">
+                        <div class="unified-stat-value" id="totalCount">0</div>
+                        <div class="unified-stat-label">إجمالي الذمة</div>
+                    </div>
+                    <div class="unified-stat">
+                        <div class="unified-stat-value" id="completedCount">0</div>
+                        <div class="unified-stat-label">الصلوات المقضية</div>
+                    </div>
+                    <div class="unified-stat">
+                        <div class="unified-stat-value" id="remainingCount">0</div>
+                        <div class="unified-stat-label">الصلوات المتبقية</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Per-prayer ledger -->
+            <div class="panel-section">
+                <div class="panel-title">ذمة كل صلاة</div>
+                <div class="ledger-grid" id="ledgerGrid"></div>
+            </div>
+        </div>
+
+        <!-- Planning Tab -->
+        <div id="planning" class="tab-content">
+            <div class="planning-form">
+                <div class="panel-title">إنشاء خطة تحسن</div>
+                <div class="planning-info">
+                    <div class="planning-info-text">
+                        اختر صلاة واحدة أو أكثر، وحدد لكل منها عدداً مستقلاً، ثم اختر المدة وطريقة التوزيع.
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">الصلوات المستهدفة (يمكن اختيار أكثر من واحدة)</label>
+                    <div class="chip-row" id="planPrayerChips"></div>
+                </div>
+
+                <div class="input-group" id="planTargetsGroup" style="display: none;">
+                    <label class="input-label">العدد المطلوب قضاؤه</label>
+                    <div id="planTargets"></div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">عدد الأيام</label>
+                    <input type="number" id="planDays" class="input-field" placeholder="مثال: 7" min="1">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">استراتيجية التوزيع</label>
+                    <select id="planStrategy" class="input-field">
+                        <option value="even">توزيع متساوٍ — نفس العدد كل يوم</option>
+                        <option value="linked">الربط بالفرائض — قضاء صلاة مع كل فريضة حاضرة</option>
+                        <option value="gradual">النمط المتدرج — البدء بعدد قليل ثم التصاعد</option>
+                        <option value="weekend">عطلة نهاية الأسبوع — تكثيف القضاء في العطلة</option>
+                    </select>
+                    <div class="hint-text" id="strategyHint"></div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">أيام السماح الأسبوعية (من 0 إلى 3 أيام)</label>
+                    <div class="chip-row" id="bufferChips"></div>
+                    <div class="hint-text">لا يُحسب التقصير في أيام السماح ولا تُكسر فيها الخطة.</div>
+                </div>
+
+                <button class="btn btn-primary" onclick="createPlan()">إنشاء الخطة</button>
+            </div>
+
+            <!-- Plan Progress -->
+            <div id="planDisplay" style="display: none;">
+                <div class="progress-section">
+                    <div class="progress-title">تقدم الخطة</div>
+                    <div class="plan-meta" id="planMeta"></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="planProgressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="planProgressText">0 من 0</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">الأهداف اليومية</div>
+                    <div id="dailyTargets"></div>
+
+                    <div class="btn-row" style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="openRebalanceModal()">تعديل أهداف الخطة ⚙️</button>
+                        <button class="btn btn-danger" onclick="deletePlan()">إلغاء الخطة</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel Tab -->
+        <div id="control" class="tab-content">
+            <!-- Add/Subtract Section -->
+            <div class="panel-section">
+                <div class="panel-title">ضبط الذمة (إضافة أو خصم)</div>
+                <div class="planning-info" style="margin-bottom: 1rem;">
+                    <div class="planning-info-text">
+                        هذه اللوحة لضبط ذمتك فقط: تزيد أو تنقص الإجمالي المطلوب دون منح نقاط خبرة ودون التأثير على الشعلة. لتسجيل قضاء فعلي استخدم زر «تم ✓».
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">اسم الصلاة</label>
+                    <select id="controlPrayerName" class="input-field">
+                        <option>الفجر</option>
+                        <option>الظهر</option>
+                        <option>العصر</option>
+                        <option>المغرب</option>
+                        <option>العشاء</option>
+                        <option>الظهرين</option>
+                        <option>المغربين</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">نوع الصلاة</label>
+                    <select id="controlPrayerType" class="input-field">
+                        <option value="forgotten">منسية</option>
+                        <option value="neglected">مهملة</option>
+                        <option value="old">قديمة</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">العدد</label>
+                    <input type="number" id="controlCount" class="input-field" placeholder="0" min="1">
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="adjustFromControl(1)">إضافة للذمة ➕</button>
+                    <button class="btn btn-secondary" onclick="adjustFromControl(-1)">خصم من الذمة ➖</button>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="panel-section">
+                <div class="panel-title">السجل</div>
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-filter="all" onclick="setHistoryFilter('all')">الكل</button>
+                    <button class="filter-btn" data-filter="completed" onclick="setHistoryFilter('completed')">المقضية ✅</button>
+                    <button class="filter-btn" data-filter="adjust" onclick="setHistoryFilter('adjust')">تعديلات الذمة 📝</button>
+                </div>
+                <div id="historyLog"></div>
+            </div>
+        </div>
+
+        <!-- Achievements Tab -->
+        <div id="achievements" class="tab-content">
+            <!-- Export Card -->
+            <div class="export-card">
+                <div class="export-card-title">📊 بطاقة إنجازي</div>
+                <p>تصدير ملخص إنجازاتك وتقدمك</p>
+                <button class="btn btn-primary" onclick="exportAchievements()">تصدير البطاقة</button>
+            </div>
+
+            <!-- Achievements Grid -->
+            <div class="achievements-grid" id="achievementsGrid"></div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="panel-section">
+                <div class="panel-title">الإعدادات والنسخ الاحتياطي</div>
+
+                <div class="settings-option">
+                    <div class="settings-label">تحميل البيانات</div>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                    <button class="btn btn-small btn-primary" onclick="document.getElementById('importFile').click()">
+                        استيراد
+                    </button>
+                </div>
+
+                <div class="settings-option">
+                    <div class="settings-label">حفظ البيانات</div>
+                    <button class="btn btn-small btn-primary" onclick="exportData()">تصدير</button>
+                </div>
+
+                <div class="settings-option" id="installRow" style="display: none;">
+                    <div class="settings-label">تثبيت التطبيق على الجهاز</div>
+                    <button class="btn btn-small btn-primary" onclick="promptInstall()">إضافة للشاشة الرئيسية</button>
+                </div>
+
+                <div class="settings-option">
+                    <div class="settings-label">العمل دون إنترنت</div>
+                    <div class="hint-text" id="pwaStatus" style="margin: 0;">جارٍ الفحص…</div>
+                </div>
+
+                <div class="settings-option">
+                    <div class="settings-label">إعادة تعيين الطوارئ</div>
+                    <button class="btn btn-small btn-danger" onclick="showResetConfirm()">حذف الكل</button>
+                </div>
+            </div>
+
+            <!-- Reset Confirmation -->
+            <div id="resetConfirm" style="display: none; margin: 1rem;">
+                <div class="panel-section">
+                    <div class="panel-title">⚠️ تأكيد الحذف</div>
+                    <div class="input-group">
+                        <label class="input-label">اكتب "تأكيد" للمتابعة</label>
+                        <input type="text" id="resetConfirmText" class="input-field" placeholder="تأكيد">
+                    </div>
+                    <button class="btn btn-danger" style="width: 100%;" onclick="confirmReset()">حذف جميع البيانات نهائياً</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="openPrayerModal()">✓ تم</button>
+
+    <!-- Prayer Logging Modal -->
+    <div id="prayerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">تسجيل قضاء صلاة</h2>
+                <button class="close-btn" onclick="closePrayerModal()">✕</button>
+            </div>
+
+            <!-- Step 1: Prayer Name (rendered from the remaining ledger) -->
+            <div class="modal-step active" id="step1">
+                <div class="option-grid" id="step1Grid"></div>
+            </div>
+
+            <!-- Step 2: Prayer Type (rendered from the remaining ledger) -->
+            <div class="modal-step" id="step2">
+                <div class="option-grid" id="step2Grid"></div>
+            </div>
+
+            <!-- Step 3: Date -->
+            <div class="modal-step" id="step3">
+                <div class="option-grid">
+                    <button class="option-btn" onclick="selectDate('today')">اليوم 📅</button>
+                    <button class="option-btn" onclick="selectDate('yesterday')">الأمس 🕐</button>
+                    <button class="option-btn" onclick="selectDate('custom')">تاريخ مخصص 📆</button>
+                </div>
+                <div id="datePickerContainer" style="display: none; margin-top: 1rem;">
+                    <input type="date" id="customDate" class="date-input">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-actions" style="margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="previousStep()">السابق</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">التالي</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rebalance Modal -->
+    <div id="rebalanceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ تعديل أهداف الخطة</h2>
+                <button class="close-btn" onclick="closeRebalanceModal()">✕</button>
+            </div>
+
+            <div id="rebalanceBody"></div>
+
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeRebalanceModal()">إغلاق</button>
+                <button class="btn btn-primary" onclick="applyRebalance()">تطبيق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Challenge Modal -->
+    <div id="challengeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚡ التحدي اليومي</h2>
+                <button class="close-btn" onclick="closeChallengeModal()">✕</button>
+            </div>
+
+            <div id="challengeBody"></div>
+
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button class="btn btn-primary" id="challengeActionBtn" onclick="challengeAction()">ابدأ التحدي</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ CONSTANTS ============
+        const BASE_PRAYERS = ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'];
+
+        // Combined names each stand for two real prayers.
+        const COMBINED_PRAYERS = {
+            'الظهرين': ['الظهر', 'العصر'],
+            'المغربين': ['المغرب', 'العشاء']
+        };
+
+        const PRAYER_ICONS = {
+            'الفجر': '🌅', 'الظهر': '☀️', 'العصر': '🌇', 'المغرب': '🌆', 'العشاء': '🌙'
+        };
+
+        // Ordered by challenge priority: forgotten first, then neglected, then old.
+        const PRAYER_TYPES = ['forgotten', 'neglected', 'old'];
+        const TYPE_META = {
+            forgotten: { label: 'منسية', icon: '😔', desc: 'نسيت الصلاة في وقتها' },
+            neglected: { label: 'مهملة', icon: '😐', desc: 'أهملت الصلاة متعمداً' },
+            old: { label: 'قديمة', icon: '⏰', desc: 'من فترة زمنية سابقة' }
+        };
+
+        const WEEKDAY_NAMES = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        const WEEKEND_DAYS = [5, 6]; // الجمعة والسبت
+        const XP_PER_PRAYER = 100;
+        const XP_PER_LEVEL = 300;
+        const CHALLENGE_BONUS_XP = 150;
+        const CHALLENGE_DURATION_MS = 24 * 60 * 60 * 1000; // exactly 24 hours
+        const MAX_FREEZE = 5;
+        const MAX_BUFFER_DAYS = 3; // أيام السماح الأسبوعية: من 0 إلى 3
+        const SHIELD_VISIBLE_MS = 48 * 60 * 60 * 1000;
+
+        const DEFAULT_ISLAMIC_TITLES = [
+            { minLevel: 1, title: "مبتدئ" },
+            { minLevel: 3, title: "مستغفر" },
+            { minLevel: 5, title: "مواظب" },
+            { minLevel: 8, title: "مسارع بالخيرات" },
+            { minLevel: 12, title: "قرة عين" },
+            { minLevel: 15, title: "نقي الفؤاد" },
+            { minLevel: 20, title: "ملاذ الخاشعين" },
+            { minLevel: 25, title: "صفي الرحمن" }
+        ];
+
+        const ACHIEVEMENTS = [
+            { id: 'first_step', name: 'الخطوة الأولى', icon: '👣', desc: 'سجل أول صلاة', condition: (d) => d.completedEntries >= 1 },
+            { id: 'start_purity', name: 'بداية النقاء', icon: '✨', desc: 'اقضِ 5 صلوات', condition: (d) => d.totalCompleted >= 5 },
+            { id: 'firm_will', name: 'عزيمة صلبة', icon: '💪', desc: 'اقضِ 20 صلاة', condition: (d) => d.totalCompleted >= 20 },
+            { id: 'halfway', name: 'نصف الطريق', icon: '🌄', desc: 'اقضِ 50 صلاة', condition: (d) => d.totalCompleted >= 50 },
+            { id: 'three_day_streak', name: 'ثبات 3 أيام', icon: '🔥', desc: 'حافظ على شعلة لمدة 3 أيام', condition: (d) => d.maxStreak >= 3 },
+            { id: 'weekly_flame', name: 'شعلة الأسبوع', icon: '🌟', desc: 'حافظ على شعلة لمدة 7 أيام', condition: (d) => d.maxStreak >= 7 },
+            { id: 'first_challenge', name: 'قابل التحدي', icon: '⚡', desc: 'أكمل تحدياً يومياً', condition: (d) => d.challengesCompleted >= 1 },
+            { id: 'challenge_master', name: 'سيد التحديات', icon: '🎖️', desc: 'أكمل 5 تحديات يومية', condition: (d) => d.challengesCompleted >= 5 },
+            { id: 'smart_planning', name: 'تخطيط إيجابي', icon: '📊', desc: 'أكمل خطة واحدة بنجاح', condition: (d) => d.plansCompleted >= 1 },
+            { id: 'complete_clarity', name: 'الصفاء التام', icon: '🕌', desc: 'اقضِ 100 صلاة', condition: (d) => d.totalCompleted >= 100 }
+        ];
+
+        // Each quote below has been checked individually against its named source
+        // to keep the correct wording linked to the correct reference (Qur'an
+        // ayahs vs. hadith), so a saying is never credited to the wrong chapter
+        // or speaker.
+        const DAILY_QUOTES = [
+            { text: 'حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَىٰ وَقُومُوا لِلَّهِ قَانِتِينَ', source: 'سورة البقرة: 238' },
+            { text: 'الصَّلَاةُ قُرْبَانُ كُلِّ تَقِيٍّ', source: 'الإمام علي عليه السلام - نهج البلاغة' },
+            { text: 'مَنْ حَافَظَ عَلَى الصَّلَوَاتِ الْخَمْسِ عَلَى مَوَاقِيتِهَا وَرُكُوعِهَا وَسُجُودِهَا كَانَ لَهُ عِنْدَ اللَّهِ عَهْدٌ أَنْ يُدْخِلَهُ الْجَنَّةَ', source: 'النبي محمد صلى الله عليه وآله' },
+            { text: 'أَوَّلُ مَا يُحَاسَبُ بِهِ الْعَبْدُ الصَّلَاةُ، فَإِذَا قُبِلَتْ قُبِلَ مِنْهُ سَائِرُ عَمَلِهِ', source: 'الإمام الصادق عليه السلام - من لا يحضره الفقيه' },
+            { text: 'إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ', source: 'سورة العنكبوت: 45' },
+            { text: 'فَوَيْلٌ لِّلْمُصَلِّينَ الَّذِينَ هُمْ عَن صَلَاتِهِمْ سَاهُونَ', source: 'سورة الماعون: 4-5' },
+            { text: 'الصَّلَاةَ الصَّلَاةَ وَمَا مَلَكَتْ أَيْمَانُكُمْ', source: 'من وصية النبي صلى الله عليه وآله الأخيرة' },
+            { text: 'قَدْ أَفْلَحَ الْمُؤْمِنُونَ الَّذِينَ هُمْ فِي صَلَاتِهِمْ خَاشِعُونَ', source: 'سورة المؤمنون: 1-2' }
+        ];
+
+        // ============ DATE UTILITIES (LOCAL TIME, NO UTC DRIFT) ============
+        function getLocalDateStr(date = new Date()) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function parseLocalDate(dateStr) {
+            const [y, m, d] = String(dateStr).split('-').map(Number);
+            return new Date(y, (m || 1) - 1, d || 1);
+        }
+
+        function localDayDiff(dateStrA, dateStrB) {
+            return Math.round((parseLocalDate(dateStrA) - parseLocalDate(dateStrB)) / 86400000);
+        }
+
+        function addDaysStr(dateStr, n) {
+            const d = parseLocalDate(dateStr);
+            d.setDate(d.getDate() + n);
+            return getLocalDateStr(d);
+        }
+
+        function formatDate(dateStr) {
+            try {
+                return parseLocalDate(dateStr).toLocaleDateString('ar-EG', {
+                    weekday: 'short', day: 'numeric', month: 'short'
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function expandPrayer(name) {
+            return COMBINED_PRAYERS[name] || [name];
+        }
+
+        function countPrayersInName(name) {
+            return expandPrayer(name).length;
+        }
+
+        function normalizeType(type) {
+            return PRAYER_TYPES.includes(type) ? type : 'old';
+        }
+
+        // ============ STATE ============
+        function emptyLedger() {
+            const ledger = {};
+            BASE_PRAYERS.forEach(p => {
+                ledger[p] = {};
+                PRAYER_TYPES.forEach(t => { ledger[p][t] = 0; });
+            });
+            return ledger;
+        }
+
+        function blankState() {
+            return {
+                xp: 0,
+                level: 1,
+                streak: 0,
+                maxStreak: 0,
+                freezeCount: 0,
+                lastLogDate: null,
+                nextFreezeDate: null,
+                shieldedDates: [],
+                lastShieldUsedAt: null,
+                history: [],
+                unlockedAchievements: [],
+                plan: null,
+                plansCompleted: 0,
+                challenge: null,
+                challengesCompleted: 0,
+                // derived, rebuilt from history on every change
+                required: emptyLedger(),
+                completed: emptyLedger(),
+                totalRequired: 0,
+                totalCompleted: 0
+            };
+        }
+
+        let state = blankState();
+
+        // UI-only state, never persisted
+        let ui = {
+            currentStep: 1,
+            selectedPrayer: null,
+            selectedType: null,
+            selectedDate: getLocalDateStr(),
+            dateMode: 'today',
+            historyFilter: 'all',
+            bufferDays: [],
+            planPrayers: [],
+            rebalanceBuffer: []
+        };
+
+        let challengeTimerId = null;
+
+        // ============ INITIALIZATION ============
+        function init() {
+            loadState();
+            renderBufferChips();
+            renderPlanPrayerChips();
+            setupEventListeners();
+            updateHeaderHeightVar();
+            rotateDailyQuote();
+            checkStreakStatus();
+            refreshChallenge(true);
+            checkAchievements();
+            updateUI();
+            renderAchievements();
+            startChallengeTicker();
+        }
+
+        function updateHeaderHeightVar() {
+            const header = document.querySelector('.header');
+            if (header) {
+                document.documentElement.style.setProperty('--header-height', header.offsetHeight + 'px');
+            }
+        }
+
+        function migrateState() {
+            (state.history || []).forEach(e => {
+                if (!e.kind) e.kind = 'completed';
+                e.type = normalizeType(e.type);
+                if (e.kind === 'adjust') {
+                    e.count = Math.abs(Number(e.count) || 0);
+                    e.sign = e.sign === -1 ? -1 : 1;
+                }
+            });
+
+            if (!Array.isArray(state.shieldedDates)) state.shieldedDates = [];
+            if (typeof state.challengesCompleted !== 'number') state.challengesCompleted = 0;
+
+            if (state.plan) {
+                const p = state.plan;
+                if (!Array.isArray(p.bufferDays)) p.bufferDays = [];
+                if (!p.strategy) p.strategy = 'even';
+                if (!p.mode) {
+                    // Older single-focus plans become the new multi-target shape.
+                    if (p.focusPrayer && p.focusPrayer !== 'all') {
+                        p.mode = 'prayers';
+                        p.targets = { [p.focusPrayer]: p.targetPrayers };
+                        p.baselines = { [p.focusPrayer]: p.baselineCompleted || 0 };
+                    } else {
+                        p.mode = 'all';
+                        p.targets = null;
+                        p.baselines = {};
+                    }
+                    delete p.focusPrayer;
+                }
+                if (!p.baselines) p.baselines = {};
+                delete p.dailyRates; // rate-based rescheduling was replaced by total-target editing
+                if (Array.isArray(p.bufferDays) && p.bufferDays.length > MAX_BUFFER_DAYS) {
+                    p.bufferDays = p.bufferDays.slice(0, MAX_BUFFER_DAYS);
+                }
+            }
+
+            if (!state.nextFreezeDate) {
+                state.nextFreezeDate = state.weeklyFreezeDate
+                    ? getLocalDateStr(new Date(state.weeklyFreezeDate))
+                    : null;
+            }
+            delete state.weeklyFreezeDate;
+        }
+
+        function loadState() {
+            try {
+                const stored = localStorage.getItem('purityTrackerState');
+                if (stored) {
+                    state = { ...blankState(), ...JSON.parse(stored) };
+                }
+                migrateState();
+                recalcTotals(true);
+            } catch (err) {
+                console.error('خطأ في تحميل البيانات:', err);
+                showToast('⚠️ حدث خطأ في تحميل البيانات');
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('purityTrackerState', JSON.stringify(state));
+            } catch (err) {
+                console.error('خطأ في حفظ البيانات:', err);
+                showToast('❌ لم يتم حفظ البيانات - ربما امتلأت الذاكرة');
+            }
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    switchTab(this.dataset.tab);
+                    closeSideMenu();
+                });
+            });
+            window.addEventListener('resize', updateHeaderHeightVar);
+
+            const strategySelect = document.getElementById('planStrategy');
+            if (strategySelect) strategySelect.addEventListener('change', updateStrategyHint);
+            updateStrategyHint();
+        }
+
+        // ============ TAB NAVIGATION ============
+        function switchTab(tabName) {
+            const tabElement = document.getElementById(tabName);
+            if (!tabElement) return;
+
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => btn.classList.remove('active'));
+            tabElement.classList.add('active');
+
+            const matchingBtn = document.querySelector(`.nav-btn[data-tab="${tabName}"]`);
+            if (matchingBtn) matchingBtn.classList.add('active');
+
+            // The settings page is reached from the header gear, not the side menu.
+            const settingsBtn = document.getElementById('settingsBtn');
+            if (settingsBtn) settingsBtn.classList.toggle('active', tabName === 'settings');
+
+            if (tabName === 'achievements') renderAchievements();
+            if (tabName === 'control') renderHistoryLog();
+            if (tabName === 'planning') { renderPlanTargets(); updatePlanDisplay(); }
+        }
+
+        // ============ SIDE MENU & SETTINGS ============
+        function openSideMenu() {
+            document.getElementById('sideMenu').classList.add('active');
+            document.getElementById('sideMenuOverlay').classList.add('active');
+        }
+
+        function closeSideMenu() {
+            document.getElementById('sideMenu').classList.remove('active');
+            document.getElementById('sideMenuOverlay').classList.remove('active');
+        }
+
+        function openSettingsPage() {
+            closeSideMenu();
+            switchTab('settings');
+        }
+
+        // ============ LEDGER (per prayer AND per type) ============
+        function remainingOfType(prayer, type) {
+            const req = (state.required[prayer] || {})[type] || 0;
+            const done = (state.completed[prayer] || {})[type] || 0;
+            return Math.max(0, req - done);
+        }
+
+        function remainingOf(prayer) {
+            return PRAYER_TYPES.reduce((s, t) => s + remainingOfType(prayer, t), 0);
+        }
+
+        function completedTotalOf(prayer) {
+            return PRAYER_TYPES.reduce((s, t) => s + ((state.completed[prayer] || {})[t] || 0), 0);
+        }
+
+        // For a combined name the usable count of a type is limited by the
+        // scarcer half - both halves must still owe that type.
+        function remainingOfNameType(name, type) {
+            return Math.min(...expandPrayer(name).map(p => remainingOfType(p, type)));
+        }
+
+        function availableTypesForName(name) {
+            return PRAYER_TYPES.filter(t => remainingOfNameType(name, t) >= 1);
+        }
+
+        function remainingOfName(name) {
+            return availableTypesForName(name).reduce((s, t) => s + remainingOfNameType(name, t), 0);
+        }
+
+        function totalRemaining() {
+            return BASE_PRAYERS.reduce((sum, p) => sum + remainingOf(p), 0);
+        }
+
+        function totalRemainingOfType(type) {
+            return BASE_PRAYERS.reduce((sum, p) => sum + remainingOfType(p, type), 0);
+        }
+
+        function recalcTotals(silent = false) {
+            const required = emptyLedger();
+            const completed = emptyLedger();
+
+            (state.history || []).forEach(entry => {
+                const type = normalizeType(entry.type);
+                const parts = expandPrayer(entry.prayer);
+                if (entry.kind === 'adjust') {
+                    const delta = Math.abs(Number(entry.count) || 0) * (entry.sign === -1 ? -1 : 1);
+                    parts.forEach(p => { if (required[p]) required[p][type] += delta; });
+                } else {
+                    parts.forEach(p => { if (completed[p]) completed[p][type] += 1; });
+                }
+            });
+
+            // Safety floor: a required balance can never sit below what has already
+            // been prayed of that same prayer/type.
+            BASE_PRAYERS.forEach(p => PRAYER_TYPES.forEach(t => {
+                required[p][t] = Math.max(0, required[p][t], completed[p][t]);
+            }));
+
+            state.required = required;
+            state.completed = completed;
+            state.totalRequired = BASE_PRAYERS.reduce(
+                (s, p) => s + PRAYER_TYPES.reduce((x, t) => x + required[p][t], 0), 0);
+            state.totalCompleted = BASE_PRAYERS.reduce(
+                (s, p) => s + PRAYER_TYPES.reduce((x, t) => x + completed[p][t], 0), 0);
+
+            updatePlanProgress(silent);
+        }
+
+        // ============ PRAYER MODAL ============
+        function openPrayerModal() {
+            if (totalRemaining() === 0) {
+                showToast('لا توجد صلوات متبقية للقضاء! أضف صلوات جديدة من لوحة التحكم أولاً.');
+                return;
+            }
+            resetModalState();
+            document.getElementById('prayerModal').classList.add('active');
+        }
+
+        function closePrayerModal() {
+            document.getElementById('prayerModal').classList.remove('active');
+            resetModalState();
+        }
+
+        function resetModalState() {
+            ui.currentStep = 1;
+            ui.selectedPrayer = null;
+            ui.selectedType = null;
+            ui.selectedDate = getLocalDateStr();
+            ui.dateMode = 'today';
+            renderPrayerOptions();
+            showStep(1);
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            clearCustomDate();
+        }
+
+        function clearCustomDate() {
+            const input = document.getElementById('customDate');
+            if (input) input.value = '';
+            const picker = document.getElementById('datePickerContainer');
+            if (picker) picker.style.display = 'none';
+        }
+
+        function renderPrayerOptions() {
+            const grid = document.getElementById('step1Grid');
+            if (!grid) return;
+
+            let html = '';
+            BASE_PRAYERS.forEach(p => {
+                const left = remainingOf(p);
+                if (left >= 1) {
+                    html += `<button class="option-btn" onclick="selectPrayer('${p}')">${p} ${PRAYER_ICONS[p]}
+                        <span class="count-pill">المتبقي: ${left}</span></button>`;
+                }
+            });
+
+            // Combined options only appear when BOTH halves still owe the same type.
+            Object.keys(COMBINED_PRAYERS).forEach(name => {
+                const [a, b] = COMBINED_PRAYERS[name];
+                const left = remainingOfName(name);
+                if (left >= 1) {
+                    html += `<button class="option-btn" onclick="selectPrayer('${name}')">${name}
+                        <small>(${a} و${b} معاً)</small>
+                        <span class="count-pill">المتبقي: ${left}</span></button>`;
+                }
+            });
+
+            grid.innerHTML = html || `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon">🕊️</div>
+                    <div class="empty-state-text">ذمتك خالية، لا توجد صلوات متبقية</div>
+                </div>`;
+        }
+
+        // Only the types that still carry a real balance for the chosen prayer
+        // are offered, so a user can never log e.g. "العصر قديمة" when that
+        // particular balance is already 0.
+        function renderTypeOptions() {
+            const grid = document.getElementById('step2Grid');
+            if (!grid) return;
+
+            const types = availableTypesForName(ui.selectedPrayer);
+            if (types.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">🕊️</div>
+                        <div class="empty-state-text">لا يوجد رصيد متبقٍ لهذه الصلاة</div>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = types.map(t => {
+                const meta = TYPE_META[t];
+                return `<button class="option-btn" onclick="selectType('${t}')">
+                            ${meta.label} ${meta.icon}<br><small>${meta.desc}</small>
+                            <span class="type-pill">المتبقي: ${remainingOfNameType(ui.selectedPrayer, t)}</span>
+                        </button>`;
+            }).join('');
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.modal-step').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(`step${step}`);
+            if (el) el.classList.add('active');
+
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.querySelector('#prayerModal .btn-secondary');
+            if (!nextBtn || !prevBtn) return;
+
+            if (step === 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.textContent = 'التالي';
+            } else if (step === 3) {
+                prevBtn.style.display = 'block';
+                nextBtn.textContent = 'تأكيد ✓';
+            } else {
+                prevBtn.style.display = 'block';
+                nextBtn.textContent = 'التالي';
+            }
+        }
+
+        function selectPrayer(name) {
+            ui.selectedPrayer = name;
+            ui.selectedType = null;
+            ui.currentStep = 2;
+            renderTypeOptions();
+
+            // If only one type is left there is nothing to choose - skip ahead.
+            const types = availableTypesForName(name);
+            if (types.length === 1) {
+                ui.selectedType = types[0];
+                ui.currentStep = 3;
+                showStep(3);
+                return;
+            }
+            showStep(2);
+        }
+
+        function selectType(type) {
+            ui.selectedType = type;
+            ui.currentStep = 3;
+            showStep(3);
+        }
+
+        function selectDate(choice) {
+            if (choice === 'today') {
+                // Wipe any custom date sitting in the picker so a stale value can
+                // never be picked up instead of today.
+                ui.dateMode = 'today';
+                clearCustomDate();
+                ui.selectedDate = getLocalDateStr();
+                submitPrayer();
+            } else if (choice === 'yesterday') {
+                ui.dateMode = 'yesterday';
+                clearCustomDate();
+                ui.selectedDate = addDaysStr(getLocalDateStr(), -1);
+                submitPrayer();
+            } else if (choice === 'custom') {
+                ui.dateMode = 'custom';
+                document.getElementById('datePickerContainer').style.display = 'block';
+            }
+        }
+
+        function nextStep() {
+            if (ui.currentStep === 1 && !ui.selectedPrayer) {
+                showToast('⚠️ اختر صلاة أولاً');
+                return;
+            }
+            if (ui.currentStep === 2 && !ui.selectedType) {
+                showToast('⚠️ اختر نوع الصلاة');
+                return;
+            }
+            if (ui.currentStep === 3) {
+                if (ui.dateMode === 'custom') {
+                    const customDate = document.getElementById('customDate').value;
+                    if (!customDate || !/^\d{4}-\d{2}-\d{2}$/.test(customDate)) {
+                        showToast('⚠️ اختر تاريخاً صحيحاً');
+                        return;
+                    }
+                    if (customDate > getLocalDateStr()) {
+                        showToast('⚠️ لا يمكن اختيار تاريخ في المستقبل');
+                        return;
+                    }
+                }
+                submitPrayer();
+                return;
+            }
+            ui.currentStep++;
+            showStep(ui.currentStep);
+        }
+
+        function previousStep() {
+            if (ui.currentStep > 1) {
+                ui.currentStep--;
+                showStep(ui.currentStep);
+                if (ui.currentStep === 1) { ui.selectedPrayer = null; ui.selectedType = null; }
+                else if (ui.currentStep === 2) { ui.selectedType = null; renderTypeOptions(); }
+            }
+        }
+
+        function submitPrayer() {
+            // Only a custom selection may override the date.
+            if (ui.dateMode === 'custom') {
+                const customDate = document.getElementById('customDate').value;
+                if (customDate) ui.selectedDate = customDate;
+            }
+
+            if (!ui.selectedPrayer || !ui.selectedType) {
+                showToast('⚠️ أكمل اختياراتك أولاً');
+                return;
+            }
+            if (remainingOfNameType(ui.selectedPrayer, ui.selectedType) < 1) {
+                showToast('⚠️ لم يعد في ذمتك شيء من هذا النوع');
+                closePrayerModal();
+                return;
+            }
+
+            logPrayer(ui.selectedPrayer, ui.selectedType, ui.selectedDate);
+            closePrayerModal();
+        }
+
+        // ============ ACTUAL QADA LOGGING (FAB "تم") ============
+        function logPrayer(prayerName, type, date) {
+            try {
+                const prayerCount = countPrayersInName(prayerName);
+                const gainedXP = XP_PER_PRAYER * prayerCount;
+
+                state.history.push({
+                    id: Date.now() + Math.random(),
+                    kind: 'completed',
+                    prayer: prayerName,
+                    type: normalizeType(type),
+                    date: date,
+                    xp: gainedXP,
+                    timestamp: new Date().toISOString()
+                });
+
+                state.xp += gainedXP;
+                updateLevel();
+                updateStreak(date);
+
+                recalcTotals();
+                refreshChallenge();
+                checkAchievements();
+                saveState();
+                updateUI();
+                showConfetti();
+                showToast(`✅ تم قضاء ${prayerName}! +${gainedXP} نقطة`);
+            } catch (err) {
+                console.error('خطأ في تسجيل الصلاة:', err);
+                showToast('❌ حدث خطأ أثناء التسجيل');
+            }
+        }
+
+        // ============ CONTROL PANEL (ذمة adjustments only) ============
+        function adjustFromControl(sign) {
+            const nameSelect = document.getElementById('controlPrayerName');
+            const typeSelect = document.getElementById('controlPrayerType');
+            const countInput = document.getElementById('controlCount');
+
+            if (!nameSelect || !typeSelect || !countInput) {
+                showToast('⚠️ حدث خطأ في الاتصال');
+                return;
+            }
+
+            const name = nameSelect.value;
+            const type = normalizeType(typeSelect.value);
+            const count = parseInt(countInput.value, 10) || 0;
+
+            if (count <= 0) {
+                showToast('⚠️ أدخل عدداً صحيحاً');
+                return;
+            }
+
+            if (sign === -1) {
+                const blocked = expandPrayer(name).find(p => remainingOfType(p, type) < count);
+                if (blocked) {
+                    showToast(`⚠️ لا يمكن خصم ${count}؛ المتبقي من ${blocked} ${TYPE_META[type].label} هو ${remainingOfType(blocked, type)}`);
+                    return;
+                }
+            }
+
+            state.history.push({
+                id: Date.now() + Math.random(),
+                kind: 'adjust',
+                prayer: name,
+                type: type,
+                count: count,
+                sign: sign === -1 ? -1 : 1,
+                date: getLocalDateStr(),
+                timestamp: new Date().toISOString()
+            });
+
+            recalcTotals();
+            checkAchievements();
+            saveState();
+            updateUI();
+
+            countInput.value = '';
+            const unit = countPrayersInName(name) * count;
+            showToast(sign === -1
+                ? `📝 تم خصم ${unit} صلاة من الذمة`
+                : `📝 تمت إضافة ${unit} صلاة إلى الذمة`);
+        }
+
+        // ============ HISTORY ============
+        function setHistoryFilter(filter) {
+            ui.historyFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            renderHistoryLog();
+        }
+
+        function typeLabel(type) {
+            const meta = TYPE_META[normalizeType(type)];
+            return `${meta.icon} ${meta.label}`;
+        }
+
+        function renderHistoryLog() {
+            const logContainer = document.getElementById('historyLog');
+            if (!logContainer) return;
+
+            const entries = [...(state.history || [])].reverse().filter(item => {
+                if (ui.historyFilter === 'completed') return item.kind !== 'adjust';
+                if (ui.historyFilter === 'adjust') return item.kind === 'adjust';
+                return true;
+            });
+
+            if (entries.length === 0) {
+                logContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">لا توجد سجلات في هذا التصنيف</div>
+                    </div>`;
+                return;
+            }
+
+            logContainer.innerHTML = entries.map(item => {
+                if (item.kind === 'adjust') {
+                    const unit = countPrayersInName(item.prayer) * item.count;
+                    const signLabel = item.sign === -1 ? `−${unit}` : `+${unit}`;
+                    return `
+                        <div class="history-item kind-adjust">
+                            <div class="history-info">
+                                <div class="history-prayer">
+                                    ${item.prayer}
+                                    <span class="entry-badge badge-adjust">📝 تعديل ذمة</span>
+                                </div>
+                                <div class="history-meta">
+                                    ${signLabel} صلاة • ${typeLabel(item.type)} • ${formatDate(item.date)}
+                                </div>
+                            </div>
+                            <div class="history-actions">
+                                <button class="history-btn history-delete" onclick="deleteHistory(${item.id})">حذف</button>
+                            </div>
+                        </div>`;
+                }
+
+                const xp = item.xp || XP_PER_PRAYER * countPrayersInName(item.prayer);
+                return `
+                    <div class="history-item kind-completed">
+                        <div class="history-info">
+                            <div class="history-prayer">
+                                ${item.prayer}
+                                <span class="entry-badge badge-completed">✅ مقضية</span>
+                                <span class="entry-badge badge-xp">+${xp} XP</span>
+                            </div>
+                            <div class="history-meta">
+                                ${typeLabel(item.type)} • ${formatDate(item.date)}
+                            </div>
+                        </div>
+                        <div class="history-actions">
+                            <button class="history-btn history-edit" onclick="showEditModal(${item.id})">تعديل</button>
+                            <button class="history-btn history-delete" onclick="deleteHistory(${item.id})">حذف</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function showEditModal(id) {
+            const item = state.history.find(h => h.id === id);
+            if (!item || item.kind === 'adjust') return;
+
+            const newType = prompt('اختر النوع: forgotten (منسية) / neglected (مهملة) / old (قديمة)', item.type);
+            if (newType && PRAYER_TYPES.includes(newType)) {
+                editHistory(id, newType);
+            }
+        }
+
+        function editHistory(id, newType) {
+            const item = state.history.find(h => h.id === id);
+            if (item) {
+                item.type = newType;
+                recalcTotals();
+                saveState();
+                updateUI();
+                showToast('✏️ تم تحديث الصلاة');
+            }
+        }
+
+        function deleteHistory(id) {
+            const item = state.history.find(h => h.id === id);
+            if (!item) return;
+
+            const isAdjust = item.kind === 'adjust';
+
+            if (!isAdjust) {
+                const xp = item.xp || XP_PER_PRAYER * countPrayersInName(item.prayer);
+                state.xp = Math.max(0, state.xp - xp);
+                state.level = Math.max(1, Math.floor(state.xp / XP_PER_LEVEL) + 1);
+            }
+
+            state.history = state.history.filter(h => h.id !== id);
+
+            recalcTotals();
+            if (!isAdjust) {
+                // Undoing a completed prayer must also undo the day it produced:
+                // if today no longer has any logged prayer, the flame for today
+                // disappears with it instead of being frozen at 1.
+                recomputeStreak();
+            }
+            refreshChallenge();
+            saveState();
+            updateUI();
+            showToast(isAdjust ? '🔄 تم حذف تعديل الذمة' : '🔄 تم استرجاع الصلاة وخصم نقاطها');
+        }
+
+        // ============ GAMIFICATION ============
+        function updateLevel() {
+            const newLevel = Math.floor(state.xp / XP_PER_LEVEL) + 1;
+            if (newLevel > state.level) {
+                state.level = newLevel;
+                showToast(`🎉 مستوى جديد! أنت الآن المستوى ${newLevel}`);
+            }
+        }
+
+        function getRankTitle() {
+            let title = 'مبتدئ';
+            for (const rank of DEFAULT_ISLAMIC_TITLES) {
+                if (state.level >= rank.minLevel) title = rank.title;
+            }
+            return title;
+        }
+
+        function completedDates() {
+            return new Set((state.history || [])
+                .filter(e => e.kind !== 'adjust')
+                .map(e => e.date));
+        }
+
+        function hasPrayedOn(dateStr) {
+            return (state.history || []).some(e => e.kind !== 'adjust' && e.date === dateStr);
+        }
+
+        function consumeShields(fromDate, missedDays) {
+            state.freezeCount -= missedDays;
+            state.lastShieldUsedAt = Date.now();
+            for (let k = 1; k <= missedDays; k++) {
+                const d = addDaysStr(fromDate, k);
+                if (!state.shieldedDates.includes(d)) state.shieldedDates.push(d);
+            }
+        }
+
+        // Rebuilds the flame straight from the log. Days bridged by a shield keep
+        // the chain alive but don't add to the count.
+        function recomputeStreak() {
+            const real = completedDates();
+            const shielded = new Set(state.shieldedDates || []);
+
+            if (real.size === 0) {
+                state.streak = 0;
+                state.lastLogDate = null;
+                return;
+            }
+
+            const last = [...real].sort().pop();
+            let streak = 0;
+            let cursor = last;
+            while (real.has(cursor) || shielded.has(cursor)) {
+                if (real.has(cursor)) streak++;
+                cursor = addDaysStr(cursor, -1);
+            }
+
+            state.streak = streak;
+            state.lastLogDate = last;
+            state.maxStreak = Math.max(state.maxStreak || 0, streak);
+        }
+
+        function updateStreak(dateStr) {
+            if (!state.lastLogDate) {
+                state.streak = 1;
+                state.maxStreak = Math.max(1, state.maxStreak);
+                state.lastLogDate = dateStr;
+                return;
+            }
+
+            if (dateStr === state.lastLogDate) return;
+            if (dateStr < state.lastLogDate) return; // back-filled older prayer
+
+            const gap = localDayDiff(dateStr, state.lastLogDate);
+
+            if (gap === 1) {
+                state.streak++;
+            } else {
+                // A gap of 2 days means exactly one missed day. The shield is spent
+                // here too - the flame only falls back to 1 when no shield is left.
+                const missed = gap - 1;
+                if (state.freezeCount >= missed) {
+                    consumeShields(state.lastLogDate, missed);
+                    state.streak++;
+                    showToast(`🛡️ استُهلك ${missed} من دروع الحماية، وشعلتك محفوظة!`);
+                } else {
+                    state.freezeCount = 0;
+                    state.streak = 1;
+                }
+            }
+
+            state.maxStreak = Math.max(state.maxStreak, state.streak);
+            state.lastLogDate = dateStr;
+        }
+
+        function checkStreakStatus() {
+            grantWeeklyFreeze();
+            if (!state.lastLogDate) return;
+
+            const today = getLocalDateStr();
+            const gap = localDayDiff(today, state.lastLogDate);
+            if (gap < 2) return; // logged today or yesterday: nothing is broken
+
+            const missed = gap - 1;
+            if (state.freezeCount >= missed) {
+                consumeShields(state.lastLogDate, missed);
+                state.lastLogDate = addDaysStr(today, -1);
+                showToast(`🛡️ استُهلك ${missed} من دروع الحماية، وشعلتك محفوظة!`);
+            } else {
+                state.freezeCount = 0;
+                state.streak = 1;
+                state.lastLogDate = today;
+                showToast('🔥 انقطعت الشعلة وبدأنا من جديد — واصل، فالطريق مفتوح.');
+            }
+            saveState();
+        }
+
+        function grantWeeklyFreeze() {
+            const today = getLocalDateStr();
+            if (!state.nextFreezeDate) {
+                state.freezeCount = Math.min(MAX_FREEZE, (state.freezeCount || 0) + 1);
+                state.nextFreezeDate = addDaysStr(today, 7);
+                saveState();
+                return;
+            }
+            if (today >= state.nextFreezeDate) {
+                state.freezeCount = Math.min(MAX_FREEZE, (state.freezeCount || 0) + 1);
+                state.nextFreezeDate = addDaysStr(today, 7);
+                saveState();
+                showToast('🛡️ حصلت على درع حماية أسبوعي!');
+            }
+        }
+
+        // The shield tile only earns its place on screen when it's relevant:
+        // a shield was just spent, or today is still empty and the flame is at risk.
+        function shieldIsRelevant() {
+            if ((state.freezeCount || 0) <= 0) {
+                return state.lastShieldUsedAt && (Date.now() - state.lastShieldUsedAt) < SHIELD_VISIBLE_MS;
+            }
+            const recentlyUsed = state.lastShieldUsedAt && (Date.now() - state.lastShieldUsedAt) < SHIELD_VISIBLE_MS;
+            const atRisk = state.streak > 0 && !hasPrayedOn(getLocalDateStr());
+            return Boolean(recentlyUsed || atRisk);
+        }
+
+        function checkAchievements() {
+            const data = {
+                totalCompleted: state.totalCompleted,
+                completedEntries: (state.history || []).filter(h => h.kind !== 'adjust').length,
+                maxStreak: state.maxStreak,
+                plansCompleted: state.plansCompleted,
+                challengesCompleted: state.challengesCompleted || 0
+            };
+
+            ACHIEVEMENTS.forEach(a => {
+                if (!state.unlockedAchievements.includes(a.id) && a.condition(data)) {
+                    state.unlockedAchievements.push(a.id);
+                    showToast(`🏆 إنجاز جديد: ${a.name}!`);
+                }
+            });
+        }
+
+        // ============ DAILY CHALLENGE ============
+        // Pace = prayers actually completed per day over the recent window, so the
+        // target matches the user's real rhythm instead of a fixed number.
+        function completionPace() {
+            const completedEntries = (state.history || []).filter(e => e.kind !== 'adjust');
+            if (completedEntries.length === 0) return null;
+
+            const today = getLocalDateStr();
+            const WINDOW = 14;
+            let count = 0;
+            completedEntries.forEach(e => {
+                const gap = localDayDiff(today, e.date);
+                if (gap >= 0 && gap < WINDOW) count += countPrayersInName(e.prayer);
+            });
+
+            const earliest = completedEntries.reduce((m, e) => (e.date < m ? e.date : m), completedEntries[0].date);
+            const span = Math.min(WINDOW, Math.max(1, localDayDiff(today, earliest) + 1));
+            return count / span;
+        }
+
+        function proposeChallenge() {
+            // Priority: forgotten → neglected → old.
+            const type = PRAYER_TYPES.find(t => totalRemainingOfType(t) > 0);
+            if (!type) return null;
+
+            const available = totalRemainingOfType(type);
+            const pace = completionPace();
+            // A brand-new user gets a gentle 2; otherwise aim slightly above the
+            // current pace so it stretches without becoming discouraging.
+            let target = pace === null ? 2 : Math.max(1, Math.round(pace * 1.25));
+            target = Math.min(target, 8, available);
+
+            return { type, target, available, pace };
+        }
+
+        function startChallenge() {
+            const proposal = proposeChallenge();
+            if (!proposal) {
+                showToast('لا توجد صلوات متبقية لبناء تحدٍ! أضف صلوات من لوحة التحكم أولاً.');
+                return;
+            }
+            const now = Date.now();
+            state.challenge = {
+                type: proposal.type,
+                target: proposal.target,
+                startedAt: now,
+                expiresAt: now + CHALLENGE_DURATION_MS,
+                status: 'active'
+            };
+            saveState();
+            updateUI();
+            renderChallengeModal();
+            showToast(`⚡ بدأ التحدي: ${proposal.target} من صلوات ${TYPE_META[proposal.type].label} خلال 24 ساعة`);
+        }
+
+        function challengeProgress() {
+            const c = state.challenge;
+            if (!c) return 0;
+            return (state.history || [])
+                .filter(e => e.kind !== 'adjust'
+                    && normalizeType(e.type) === c.type
+                    && new Date(e.timestamp).getTime() >= c.startedAt)
+                .reduce((s, e) => s + countPrayersInName(e.prayer), 0);
+        }
+
+        function challengeTimeLeft() {
+            const c = state.challenge;
+            if (!c || c.status !== 'active') return 0;
+            return Math.max(0, c.expiresAt - Date.now());
+        }
+
+        function formatCountdown(ms) {
+            const total = Math.floor(ms / 1000);
+            const h = String(Math.floor(total / 3600)).padStart(2, '0');
+            const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+            const s = String(total % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function refreshChallenge(silent = false) {
+            const c = state.challenge;
+            if (!c || c.status !== 'active') return;
+
+            if (challengeProgress() >= c.target) {
+                c.status = 'done';
+                c.finishedAt = Date.now();
+                state.challengesCompleted = (state.challengesCompleted || 0) + 1;
+                state.xp += CHALLENGE_BONUS_XP;
+                updateLevel();
+                checkAchievements();
+                saveState();
+                if (!silent) {
+                    showConfetti();
+                    showToast(`🏅 أكملت التحدي اليومي! +${CHALLENGE_BONUS_XP} نقطة`);
+                }
+                return;
+            }
+
+            if (Date.now() >= c.expiresAt) {
+                c.status = 'expired';
+                saveState();
+                if (!silent) showToast('⌛ انتهى وقت التحدي — ابدأ تحدياً جديداً متى شئت.');
+            }
+        }
+
+        function startChallengeTicker() {
+            if (challengeTimerId) clearInterval(challengeTimerId);
+            challengeTimerId = setInterval(() => {
+                const c = state.challenge;
+                if (!c || c.status !== 'active') return;
+
+                const left = challengeTimeLeft();
+                const timerEl = document.getElementById('challengeTimer');
+                if (timerEl) {
+                    timerEl.textContent = formatCountdown(left);
+                    timerEl.classList.toggle('urgent', left < 60 * 60 * 1000);
+                }
+                renderChallengeStat();
+
+                if (left === 0) {
+                    refreshChallenge();
+                    renderChallengeModal();
+                    updateUI();
+                }
+            }, 1000);
+        }
+
+        function renderChallengeStat() {
+            const valueEl = document.getElementById('challengeValue');
+            const subEl = document.getElementById('challengeSub');
+            if (!valueEl || !subEl) return;
+
+            const c = state.challenge;
+            if (!c || c.status === 'expired') {
+                valueEl.textContent = 'ابدأ';
+                subEl.textContent = c && c.status === 'expired' ? 'انتهى الوقت' : 'اضغط للبدء';
+                return;
+            }
+            if (c.status === 'done') {
+                valueEl.textContent = '✔';
+                subEl.textContent = 'أُنجز اليوم';
+                return;
+            }
+            valueEl.textContent = `${Math.min(challengeProgress(), c.target)}/${c.target}`;
+            subEl.textContent = formatCountdown(challengeTimeLeft());
+        }
+
+        function openChallengeModal() {
+            refreshChallenge();
+            renderChallengeModal();
+            document.getElementById('challengeModal').classList.add('active');
+        }
+
+        function closeChallengeModal() {
+            document.getElementById('challengeModal').classList.remove('active');
+        }
+
+        function paceSentence(pace) {
+            if (pace === null) return 'لا يوجد سجل كافٍ بعد، لذا بدأنا بهدف لطيف يمكن البناء عليه.';
+            const weekly = Math.round(pace * 7 * 10) / 10;
+            return `معدلك الحالي نحو ${weekly} صلاة أسبوعياً، والهدف مضبوط على هذا الإيقاع.`;
+        }
+
+        function renderChallengeModal() {
+            const body = document.getElementById('challengeBody');
+            const btn = document.getElementById('challengeActionBtn');
+            if (!body || !btn) return;
+
+            const c = state.challenge;
+
+            if (c && c.status === 'active') {
+                const progress = Math.min(challengeProgress(), c.target);
+                const pct = c.target > 0 ? (progress / c.target) * 100 : 0;
+                body.innerHTML = `
+                    <div class="challenge-headline">
+                        اقضِ ${c.target} من صلوات ${TYPE_META[c.type].label} ${TYPE_META[c.type].icon} خلال 24 ساعة
+                    </div>
+                    <div class="challenge-status"><span class="challenge-badge">⚡ التحدي جارٍ</span></div>
+                    <div class="countdown" id="challengeTimer">${formatCountdown(challengeTimeLeft())}</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%"></div></div>
+                    <div class="challenge-status">${progress} من ${c.target}</div>
+                    <div class="challenge-note">
+                        سجّل القضاء من زر «تم ✓» وسيُحتسب تلقائياً ضمن التحدي.
+                        الجائزة عند الإتمام: +${CHALLENGE_BONUS_XP} نقطة خبرة.
+                    </div>`;
+                btn.textContent = 'تراجع عن التحدي';
+                btn.className = 'btn btn-secondary';
+                return;
+            }
+
+            if (c && c.status === 'done') {
+                body.innerHTML = `
+                    <div class="challenge-headline">أحسنت! أتممت تحدي ${TYPE_META[c.type].label} بالكامل 🎉</div>
+                    <div class="challenge-status"><span class="challenge-badge done">✅ مكتمل</span></div>
+                    <div class="challenge-note">
+                        عدد التحديات المكتملة: ${state.challengesCompleted || 0}.
+                        يمكنك بدء تحدٍ جديد الآن.
+                    </div>`;
+                btn.textContent = 'تحدٍ جديد';
+                btn.className = 'btn btn-primary';
+                return;
+            }
+
+            const proposal = proposeChallenge();
+            if (!proposal) {
+                body.innerHTML = `
+                    <div class="challenge-headline">ذمتك خالية 🕊️</div>
+                    <div class="challenge-note">
+                        لا توجد صلوات متبقية لبناء تحدٍ عليها. أضف صلوات من لوحة التحكم أولاً.
+                    </div>`;
+                btn.textContent = 'حسناً';
+                btn.className = 'btn btn-secondary';
+                return;
+            }
+
+            const expiredNote = c && c.status === 'expired'
+                ? `<div class="challenge-status"><span class="challenge-badge expired">⌛ انتهى التحدي السابق</span></div>`
+                : '';
+
+            body.innerHTML = `
+                <div class="challenge-headline">
+                    تحدي اليوم: ${proposal.target} من صلوات ${TYPE_META[proposal.type].label} ${TYPE_META[proposal.type].icon}
+                </div>
+                ${expiredNote}
+                <div class="challenge-note">
+                    اخترنا ${TYPE_META[proposal.type].label} لأنها الأولى في ترتيب الأولوية ضمن ذمتك
+                    (المنسية ثم المهملة ثم القديمة)، والمتبقي منها ${proposal.available}.<br>
+                    ${paceSentence(proposal.pace)}<br>
+                    عند البدء يعمل عدّاد تنازلي مدته 24 ساعة بالضبط، والجائزة +${CHALLENGE_BONUS_XP} نقطة.
+                </div>`;
+            btn.textContent = 'ابدأ التحدي';
+            btn.className = 'btn btn-primary';
+        }
+
+        function challengeAction() {
+            const c = state.challenge;
+            if (c && c.status === 'active') {
+                if (!confirm('هل تريد إلغاء التحدي الحالي؟')) return;
+                state.challenge = null;
+                saveState();
+                updateUI();
+                renderChallengeModal();
+                showToast('تم إلغاء التحدي');
+                return;
+            }
+            if (!proposeChallenge()) {
+                closeChallengeModal();
+                return;
+            }
+            startChallenge();
+        }
+
+        // ============ PLANNING ============
+        function planTotalTargets(plan) {
+            if (!plan) return 0;
+            if (plan.mode === 'prayers') {
+                return Object.values(plan.targets || {}).reduce((a, b) => a + b, 0);
+            }
+            return plan.targetPrayers || 0;
+        }
+
+        function updatePlanProgress(silent = false) {
+            const plan = state.plan;
+            if (!plan) return;
+
+            let done;
+            if (plan.mode === 'prayers') {
+                // Each prayer counts only up to its own target, so overshooting
+                // one prayer can't mask a shortfall in another.
+                done = Object.keys(plan.targets || {}).reduce((sum, p) => {
+                    const gained = Math.max(0, completedTotalOf(p) - ((plan.baselines || {})[p] || 0));
+                    return sum + Math.min(plan.targets[p], gained);
+                }, 0);
+            } else {
+                done = Math.max(0, state.totalCompleted - (plan.baselineCompleted || 0));
+            }
+
+            plan.completedPrayers = done;
+
+            if (done >= plan.targetPrayers) {
+                if (!plan.completed) {
+                    plan.completed = true;
+                    state.plansCompleted = (state.plansCompleted || 0) + 1;
+                    if (!silent) showToast('🎉 أكملت خطتك بنجاح! أحسنت 🌙');
+                }
+            } else if (plan.completed) {
+                plan.completed = false;
+                state.plansCompleted = Math.max(0, (state.plansCompleted || 0) - 1);
+            }
+        }
+
+        function renderBufferChips() {
+            const row = document.getElementById('bufferChips');
+            if (!row) return;
+            row.innerHTML = WEEKDAY_NAMES.map((name, idx) =>
+                `<button type="button" class="chip" data-day="${idx}" onclick="toggleBufferDay(${idx})">${name}</button>`
+            ).join('');
+        }
+
+        function toggleBufferDay(idx) {
+            const pos = ui.bufferDays.indexOf(idx);
+            if (pos >= 0) {
+                ui.bufferDays.splice(pos, 1);
+            } else {
+                if (ui.bufferDays.length >= MAX_BUFFER_DAYS) {
+                    showToast(`⚠️ يمكن اختيار ${MAX_BUFFER_DAYS} أيام سماح كحد أقصى`);
+                    return;
+                }
+                ui.bufferDays.push(idx);
+            }
+            document.querySelectorAll('#bufferChips .chip').forEach(chip => {
+                chip.classList.toggle('active', ui.bufferDays.includes(Number(chip.dataset.day)));
+            });
+        }
+
+        // Multi-select: "جميع الصلوات" is exclusive, any other combination is free.
+        function renderPlanPrayerChips() {
+            const row = document.getElementById('planPrayerChips');
+            if (!row) return;
+            const options = [{ key: 'all', label: 'جميع الصلوات' }]
+                .concat(BASE_PRAYERS.map(p => ({ key: p, label: p })));
+            row.innerHTML = options.map(o =>
+                `<button type="button" class="chip" data-key="${o.key}" onclick="togglePlanPrayer('${o.key}')">${o.label}</button>`
+            ).join('');
+        }
+
+        function togglePlanPrayer(key) {
+            const selected = ui.planPrayers;
+            if (key === 'all') {
+                ui.planPrayers = selected.includes('all') ? [] : ['all'];
+            } else {
+                const without = selected.filter(k => k !== 'all');
+                const pos = without.indexOf(key);
+                if (pos >= 0) without.splice(pos, 1);
+                else without.push(key);
+                ui.planPrayers = without;
+            }
+
+            document.querySelectorAll('#planPrayerChips .chip').forEach(chip => {
+                chip.classList.toggle('active', ui.planPrayers.includes(chip.dataset.key));
+            });
+            renderPlanTargets();
+        }
+
+        // A dedicated number input appears for every selected prayer.
+        function renderPlanTargets() {
+            const group = document.getElementById('planTargetsGroup');
+            const box = document.getElementById('planTargets');
+            if (!group || !box) return;
+
+            if (ui.planPrayers.length === 0) {
+                group.style.display = 'none';
+                box.innerHTML = '';
+                return;
+            }
+            group.style.display = 'block';
+
+            if (ui.planPrayers.includes('all')) {
+                box.innerHTML = `
+                    <div class="target-row">
+                        <label>جميع الصلوات</label>
+                        <input type="number" class="input-field" id="planTarget_all" min="1" placeholder="مثال: 10">
+                        <span class="target-hint">المتبقي ${totalRemaining()}</span>
+                    </div>`;
+                return;
+            }
+
+            box.innerHTML = ui.planPrayers.map(p => {
+                const idx = BASE_PRAYERS.indexOf(p);
+                return `
+                    <div class="target-row">
+                        <label>${PRAYER_ICONS[p]} ${p}</label>
+                        <input type="number" class="input-field" id="planTarget_${idx}" min="1" placeholder="0">
+                        <span class="target-hint">المتبقي ${remainingOf(p)}</span>
+                    </div>`;
+            }).join('');
+        }
+
+        const STRATEGY_HINTS = {
+            even: 'يوزّع المتبقي بالتساوي على الأيام المتاحة.',
+            linked: 'اقضِ صلاة سابقة مع كل فريضة حاضرة (حتى 5 يومياً) — الأسهل للاستمرار.',
+            gradual: 'يبدأ بعدد قليل ثم يتصاعد تدريجياً حتى نهاية المدة.',
+            weekend: 'يخفّف أيام العمل ويكثّف القضاء في الجمعة والسبت.'
+        };
+
+        function updateStrategyHint() {
+            const select = document.getElementById('planStrategy');
+            const hint = document.getElementById('strategyHint');
+            if (!select || !hint) return;
+            hint.textContent = STRATEGY_HINTS[select.value] || '';
+        }
+
+        function createPlan() {
+            const daysInput = document.getElementById('planDays');
+            const strategySelect = document.getElementById('planStrategy');
+            if (!daysInput) return;
+
+            if (ui.planPrayers.length === 0) {
+                showToast('⚠️ اختر صلاة واحدة على الأقل');
+                return;
+            }
+
+            const days = parseInt(daysInput.value, 10) || 0;
+            const strategy = strategySelect ? strategySelect.value : 'even';
+
+            if (days <= 0) {
+                showToast('⚠️ أدخل عدد أيام صحيحاً');
+                return;
+            }
+            if (ui.bufferDays.length >= days) {
+                showToast('⚠️ أيام السماح تستهلك كامل مدة الخطة');
+                return;
+            }
+
+            const isAll = ui.planPrayers.includes('all');
+            let plan;
+
+            if (isAll) {
+                const el = document.getElementById('planTarget_all');
+                const target = parseInt(el ? el.value : '', 10) || 0;
+                const available = totalRemaining();
+                if (target <= 0) { showToast('⚠️ أدخل عدد الصلوات المستهدفة'); return; }
+                if (available === 0) { showToast('⚠️ لا توجد صلوات متبقية، أضف صلوات من لوحة التحكم أولاً.'); return; }
+                if (target > available) { showToast(`⚠️ المتبقي ${available} فقط`); return; }
+
+                plan = {
+                    mode: 'all',
+                    targets: null,
+                    baselines: {},
+                    baselineCompleted: state.totalCompleted,
+                    targetPrayers: target
+                };
+            } else {
+                const targets = {};
+                const baselines = {};
+                for (const p of ui.planPrayers) {
+                    const idx = BASE_PRAYERS.indexOf(p);
+                    const el = document.getElementById(`planTarget_${idx}`);
+                    const value = parseInt(el ? el.value : '', 10) || 0;
+                    if (value <= 0) { showToast(`⚠️ أدخل عدداً صحيحاً لصلاة ${p}`); return; }
+                    if (value > remainingOf(p)) {
+                        showToast(`⚠️ المتبقي من ${p} هو ${remainingOf(p)} فقط`);
+                        return;
+                    }
+                    targets[p] = value;
+                    // Snapshot of what was already prayed, so the plan opens at a
+                    // truthful 0% and today's earlier prayers aren't counted twice.
+                    baselines[p] = completedTotalOf(p);
+                }
+
+                plan = {
+                    mode: 'prayers',
+                    targets: targets,
+                    baselines: baselines,
+                    baselineCompleted: state.totalCompleted,
+                    targetPrayers: Object.values(targets).reduce((a, b) => a + b, 0)
+                };
+            }
+
+            state.plan = {
+                ...plan,
+                targetDays: days,
+                originalTargetDays: days,
+                startDate: getLocalDateStr(),
+                strategy: strategy,
+                bufferDays: [...ui.bufferDays],
+                completedPrayers: 0,
+                completed: false
+            };
+
+            recalcTotals(true);
+            saveState();
+            updateUI();
+            showToast('📊 تم إنشاء الخطة بنجاح!');
+
+            daysInput.value = '';
+            ui.planPrayers = [];
+            document.querySelectorAll('#planPrayerChips .chip').forEach(c => c.classList.remove('active'));
+            renderPlanTargets();
+        }
+
+        function deletePlan() {
+            if (!state.plan) return;
+            if (!confirm('هل تريد إلغاء الخطة الحالية؟ لن تتأثر صلواتك المقضية.')) return;
+            state.plan = null;
+            recalcTotals(true);
+            saveState();
+            updateUI();
+            showToast('🗑️ تم إلغاء الخطة');
+        }
+
+        // Spread `total` across `weights` as whole numbers summing back to `total`.
+        function distribute(total, weights) {
+            const result = weights.map(() => 0);
+            const sumW = weights.reduce((a, b) => a + b, 0);
+            if (sumW <= 0 || total <= 0) return result;
+
+            const raw = weights.map(w => (total * w) / sumW);
+            raw.forEach((v, i) => { result[i] = Math.floor(v); });
+
+            let left = total - result.reduce((a, b) => a + b, 0);
+            const order = raw
+                .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+                .filter(o => weights[o.i] > 0)
+                .sort((a, b) => b.frac - a.frac);
+
+            let k = 0;
+            while (left > 0 && order.length > 0) {
+                result[order[k % order.length].i]++;
+                left--;
+                k++;
+            }
+            return result;
+        }
+
+        function buildSchedule(plan) {
+            const today = getLocalDateStr();
+            const elapsed = Math.max(0, localDayDiff(today, plan.startDate));
+            const daysLeft = Math.max(1, plan.targetDays - elapsed);
+            const remaining = Math.max(0, plan.targetPrayers - plan.completedPrayers);
+            const buffers = Array.isArray(plan.bufferDays) ? plan.bufferDays : [];
+
+            const days = [];
+            for (let i = 0; i < daysLeft; i++) {
+                const dateStr = addDaysStr(plan.startDate, elapsed + i);
+                const dow = parseLocalDate(dateStr).getDay();
+                days.push({ dateStr, dow, buffer: buffers.includes(dow) });
+            }
+
+            if (days.every(d => d.buffer)) days.forEach(d => { d.buffer = false; });
+
+            const activeIdx = days.map((d, i) => (d.buffer ? -1 : i)).filter(i => i >= 0);
+            const weights = days.map(() => 0);
+
+            activeIdx.forEach((dayIndex, order) => {
+                const d = days[dayIndex];
+                if (plan.strategy === 'gradual') {
+                    const span = Math.max(1, activeIdx.length - 1);
+                    weights[dayIndex] = 0.5 + order / span; // 0.5 → 1.5
+                } else if (plan.strategy === 'weekend') {
+                    weights[dayIndex] = WEEKEND_DAYS.includes(d.dow) ? 2.5 : 1;
+                } else {
+                    weights[dayIndex] = 1; // even & linked
+                }
+            });
+
+            const targets = distribute(remaining, weights);
+            days.forEach((d, i) => { d.target = targets[i]; });
+
+            return { days, remaining, daysLeft, activeDays: activeIdx.length };
+        }
+
+        function updatePlanDisplay() {
+            const display = document.getElementById('planDisplay');
+            if (!display) return;
+
+            const plan = state.plan;
+            if (!plan) {
+                display.style.display = 'none';
+                return;
+            }
+            display.style.display = 'block';
+
+            const progress = plan.targetPrayers > 0
+                ? Math.min(100, (plan.completedPrayers / plan.targetPrayers) * 100)
+                : 0;
+            document.getElementById('planProgressFill').style.width = progress + '%';
+            document.getElementById('planProgressText').textContent =
+                `${Math.min(plan.completedPrayers, plan.targetPrayers)} من ${plan.targetPrayers}`;
+
+            const focusTags = plan.mode === 'prayers'
+                ? Object.keys(plan.targets).map(p =>
+                    `<span class="plan-tag">🎯 ${p}: ${plan.targets[p]}</span>`).join('')
+                : `<span class="plan-tag">🎯 جميع الصلوات: ${plan.targetPrayers}</span>`;
+
+            const strategyLabel = {
+                even: 'توزيع متساوٍ', linked: 'الربط بالفرائض',
+                gradual: 'نمط متدرج', weekend: 'تكثيف العطلة'
+            }[plan.strategy] || 'توزيع متساوٍ';
+            const bufferLabel = (plan.bufferDays && plan.bufferDays.length)
+                ? plan.bufferDays.map(i => WEEKDAY_NAMES[i]).join(' و')
+                : 'بدون';
+
+            document.getElementById('planMeta').innerHTML = `
+                ${focusTags}
+                <span class="plan-tag">🧭 ${strategyLabel}</span>
+                <span class="plan-tag">🛋️ سماح: ${bufferLabel}</span>
+                <span class="plan-tag">📅 تبدأ: ${formatDate(plan.startDate)}</span>`;
+
+            const targetsEl = document.getElementById('dailyTargets');
+
+            if (plan.completed) {
+                targetsEl.innerHTML = `
+                    <div class="schedule-row" style="justify-content: center;">
+                        🎉 أتممت هذه الخطة! يمكنك إنشاء خطة جديدة.
+                    </div>`;
+                return;
+            }
+
+            const schedule = buildSchedule(plan);
+            const today = getLocalDateStr();
+            const peak = Math.max(0, ...schedule.days.map(d => d.target));
+
+            let html = schedule.days.map(d => {
+                const classes = ['schedule-row'];
+                if (d.buffer) classes.push('buffer');
+                if (d.dateStr === today) classes.push('today');
+                const right = d.buffer
+                    ? '🛋️ يوم سماح'
+                    : `<span class="schedule-target">${d.target} صلاة</span>`;
+                return `<div class="${classes.join(' ')}">
+                            <span>${formatDate(d.dateStr)}${d.dateStr === today ? ' (اليوم)' : ''}</span>
+                            ${right}
+                        </div>`;
+            }).join('');
+
+            if (plan.strategy === 'linked' && peak > 5) {
+                html += `<div class="hint-text">⚠️ النمط المرتبط بالفرائض يفترض 5 صلوات يومياً كحد أعلى؛
+                         هدفك الحالي يحتاج ${peak} يومياً. وسّع عدد الأيام بإعادة الجدولة.</div>`;
+            }
+            if (schedule.remaining === 0) {
+                html = `<div class="schedule-row" style="justify-content: center;">لم يتبقَّ شيء من هذه الخطة 🎉</div>`;
+            }
+
+            targetsEl.innerHTML = html;
+        }
+
+        // ============ REBALANCING ============
+        // Editing here always changes TOTAL plan targets (and buffer days), never
+        // a per-day rate. The daily schedule is then simply re-derived from the
+        // new totals by buildSchedule(), using the plan's existing strategy.
+        function rebalanceKeys(plan) {
+            return plan.mode === 'prayers' ? Object.keys(plan.targets || {}) : ['__all__'];
+        }
+
+        function rebalanceLabel(key) {
+            return key === '__all__' ? 'جميع الصلوات' : `${PRAYER_ICONS[key] || ''} ${key}`;
+        }
+
+        // What's already been achieved toward this key since the plan started -
+        // this is the hard floor a new total can never drop below.
+        function rebalanceDone(plan, key) {
+            if (key === '__all__') {
+                return Math.max(0, state.totalCompleted - (plan.baselineCompleted || 0));
+            }
+            return Math.max(0, completedTotalOf(key) - ((plan.baselines || {})[key] || 0));
+        }
+
+        // How much further this key could still grow given the real remaining
+        // balance in the ذمة - this is the ceiling for a new total.
+        function rebalanceHeadroom(plan, key) {
+            return key === '__all__' ? totalRemaining() : remainingOf(key);
+        }
+
+        function targetInputId(key) {
+            return key === '__all__' ? 'rebalanceTarget_all' : `rebalanceTarget_${BASE_PRAYERS.indexOf(key)}`;
+        }
+
+        function openRebalanceModal() {
+            if (!state.plan) { showToast('⚠️ لا توجد خطة حالية'); return; }
+            if (state.plan.completed) { showToast('✅ هذه الخطة مكتملة بالفعل'); return; }
+            ui.rebalanceBuffer = [...(state.plan.bufferDays || [])];
+            renderRebalanceModal();
+            document.getElementById('rebalanceModal').classList.add('active');
+        }
+
+        function closeRebalanceModal() {
+            document.getElementById('rebalanceModal').classList.remove('active');
+        }
+
+        function renderRebalanceModal() {
+            const body = document.getElementById('rebalanceBody');
+            const plan = state.plan;
+            if (!body || !plan) return;
+
+            const elapsed = Math.max(0, localDayDiff(getLocalDateStr(), plan.startDate));
+            const naturalDaysLeft = Math.max(1, plan.targetDays - elapsed);
+
+            const rows = rebalanceKeys(plan).map(key => {
+                const current = key === '__all__' ? plan.targetPrayers : plan.targets[key];
+                const done = rebalanceDone(plan, key);
+                const max = done + rebalanceHeadroom(plan, key);
+                return `
+                    <div class="target-row">
+                        <label>${rebalanceLabel(key)}</label>
+                        <input type="number" class="input-field" id="${targetInputId(key)}"
+                               min="${done}" max="${max}" value="${current}">
+                        <span class="target-hint">منجز ${done} • أقصى ${max}</span>
+                    </div>`;
+            }).join('');
+
+            body.innerHTML = `
+                <div class="rebalance-section">
+                    <div class="rebalance-section-title">إجمالي المستهدف لكل صلاة</div>
+                    <div class="hint-text" style="margin-bottom: 0.8rem;">
+                        عدّل العدد الكلي لكل صلاة ضمن الخطة (لا يمكن أن يقل عمّا أُنجز، ولا يتجاوز المتبقي الفعلي في الذمة).
+                    </div>
+                    ${rows}
+                </div>
+
+                <div class="rebalance-section">
+                    <div class="rebalance-section-title">أيام السماح الأسبوعية (0 إلى ${MAX_BUFFER_DAYS})</div>
+                    <div class="chip-row" id="rebalanceBufferChips"></div>
+                    <div class="hint-text">الأيام المحددة لا يُحسب فيها تقصير ولا تُكسر فيها الخطة.</div>
+                </div>
+
+                <div class="rebalance-section">
+                    <div class="rebalance-section-title">عدد الأيام المتبقية (اختياري)</div>
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <input type="number" id="rebalanceDays" class="input-field" min="1"
+                               placeholder="اتركه فارغاً لاستخدام الأيام المتبقية (${naturalDaysLeft})">
+                    </div>
+                </div>
+
+                <div class="hint-text" id="rebalancePreview" style="text-align: center; font-weight: 700;"></div>`;
+
+            renderRebalanceBufferChips();
+            rebalanceKeys(plan).forEach(key => {
+                const el = document.getElementById(targetInputId(key));
+                if (el) el.addEventListener('input', previewRebalance);
+            });
+            const daysInput = document.getElementById('rebalanceDays');
+            if (daysInput) daysInput.addEventListener('input', previewRebalance);
+
+            previewRebalance();
+        }
+
+        function renderRebalanceBufferChips() {
+            const row = document.getElementById('rebalanceBufferChips');
+            if (!row) return;
+            row.innerHTML = WEEKDAY_NAMES.map((name, idx) =>
+                `<button type="button" class="chip ${ui.rebalanceBuffer.includes(idx) ? 'active' : ''}"
+                         data-day="${idx}" onclick="toggleRebalanceBufferDay(${idx})">${name}</button>`
+            ).join('');
+        }
+
+        function toggleRebalanceBufferDay(idx) {
+            const pos = ui.rebalanceBuffer.indexOf(idx);
+            if (pos >= 0) {
+                ui.rebalanceBuffer.splice(pos, 1);
+            } else {
+                if (ui.rebalanceBuffer.length >= MAX_BUFFER_DAYS) {
+                    showToast(`⚠️ يمكن اختيار ${MAX_BUFFER_DAYS} أيام سماح كحد أقصى`);
+                    return;
+                }
+                ui.rebalanceBuffer.push(idx);
+            }
+            renderRebalanceBufferChips();
+            previewRebalance();
+        }
+
+        // Reads and clamps the typed totals; returns null (with a toast) for the
+        // first value that breaks its [done, done+headroom] range.
+        function readRebalanceTargets() {
+            const plan = state.plan;
+            const keys = rebalanceKeys(plan);
+            const values = {};
+
+            for (const key of keys) {
+                const el = document.getElementById(targetInputId(key));
+                const raw = parseInt(el ? el.value : '', 10);
+                const done = rebalanceDone(plan, key);
+                const max = done + rebalanceHeadroom(plan, key);
+
+                if (isNaN(raw) || raw <= 0) {
+                    showToast(`⚠️ أدخل عدداً صحيحاً لـ ${rebalanceLabel(key)}`);
+                    return null;
+                }
+                if (raw < done) {
+                    showToast(`⚠️ لا يمكن أن يقل إجمالي ${rebalanceLabel(key)} عن ${done} (المنجز فعلاً)`);
+                    return null;
+                }
+                if (raw > max) {
+                    showToast(`⚠️ أقصى إجمالي ممكن لـ ${rebalanceLabel(key)} هو ${max}`);
+                    return null;
+                }
+                values[key] = raw;
+            }
+
+            return values;
+        }
+
+        // Builds a disposable clone of the plan with the typed totals/buffer days
+        // applied, purely to preview the resulting percentage and end date.
+        function previewPlanFrom(values, bufferDays, days) {
+            const plan = state.plan;
+            const clone = { ...plan, bufferDays: [...bufferDays] };
+
+            if (plan.mode === 'prayers') {
+                clone.targets = { ...values };
+                clone.targetPrayers = Object.values(values).reduce((a, b) => a + b, 0);
+            } else {
+                clone.targetPrayers = values.__all__;
+            }
+
+            const elapsed = Math.max(0, localDayDiff(getLocalDateStr(), plan.startDate));
+            const naturalDaysLeft = Math.max(1, plan.targetDays - elapsed);
+            clone.targetDays = (days && days > 0) ? days : naturalDaysLeft;
+            clone.startDate = getLocalDateStr();
+            clone.completedPrayers = rebalanceKeys(plan).reduce((sum, key) => {
+                const done = rebalanceDone(plan, key);
+                return sum + Math.min(values[key] !== undefined ? values[key] : done, done);
+            }, 0);
+
+            return clone;
+        }
+
+        function previewRebalance() {
+            const el = document.getElementById('rebalancePreview');
+            if (!el || !state.plan) return;
+
+            const values = {};
+            let ok = true;
+            rebalanceKeys(state.plan).forEach(key => {
+                const inp = document.getElementById(targetInputId(key));
+                const raw = parseInt(inp ? inp.value : '', 10);
+                if (isNaN(raw) || raw <= 0) ok = false;
+                values[key] = isNaN(raw) ? 0 : raw;
+            });
+            if (!ok) { el.textContent = ''; return; }
+
+            const daysInput = document.getElementById('rebalanceDays');
+            const requestedDays = daysInput ? parseInt(daysInput.value, 10) : NaN;
+
+            const clone = previewPlanFrom(values, ui.rebalanceBuffer, isNaN(requestedDays) ? null : requestedDays);
+            const pct = clone.targetPrayers > 0
+                ? Math.min(100, Math.round((clone.completedPrayers / clone.targetPrayers) * 100))
+                : 0;
+
+            if (clone.completedPrayers >= clone.targetPrayers) {
+                el.textContent = `✅ بهذه الأعداد تكون الخطة قد اكتملت بالفعل (${pct}%).`;
+                return;
+            }
+
+            const schedule = buildSchedule(clone);
+            const end = schedule.days[schedule.days.length - 1];
+            el.textContent = `📊 ${pct}% • ينتهي تقريباً في ${formatDate(end.dateStr)} (${schedule.days.length} يوماً)`;
+        }
+
+        function applyRebalance() {
+            const plan = state.plan;
+            if (!plan) return;
+
+            const values = readRebalanceTargets();
+            if (!values) return;
+
+            const daysInput = document.getElementById('rebalanceDays');
+            const requestedDays = daysInput ? parseInt(daysInput.value, 10) : NaN;
+            const elapsed = Math.max(0, localDayDiff(getLocalDateStr(), plan.startDate));
+            const naturalDaysLeft = Math.max(1, plan.targetDays - elapsed);
+            const newDays = (!isNaN(requestedDays) && requestedDays > 0) ? requestedDays : naturalDaysLeft;
+
+            // Baselines are never touched - only the totals, the buffer days,
+            // the deadline and the start-of-window date move.
+            if (plan.mode === 'prayers') {
+                plan.targets = { ...values };
+                plan.targetPrayers = Object.values(values).reduce((a, b) => a + b, 0);
+            } else {
+                plan.targetPrayers = values.__all__;
+            }
+            plan.bufferDays = [...ui.rebalanceBuffer];
+            plan.targetDays = newDays;
+            plan.startDate = getLocalDateStr();
+
+            recalcTotals(true);
+            saveState();
+            updateUI();
+            closeRebalanceModal();
+
+            const pct = plan.targetPrayers > 0
+                ? Math.min(100, Math.round((plan.completedPrayers / plan.targetPrayers) * 100))
+                : 0;
+            if (plan.completed) {
+                showToast('🎉 حُدِّثت الخطة، وبالأعداد الجديدة أصبحت مكتملة!');
+            } else {
+                const schedule = buildSchedule(plan);
+                const end = schedule.days[schedule.days.length - 1];
+                showToast(`🔄 حُدِّثت الخطة — ${pct}% مكتمل، الانتهاء المتوقع ${formatDate(end.dateStr)}`);
+            }
+        }
+
+        // ============ DASHBOARD PLAN SUMMARY ============
+        function planSummary() {
+            const plan = state.plan;
+            if (!plan) return null;
+
+            const today = getLocalDateStr();
+            const pct = plan.targetPrayers > 0
+                ? Math.min(100, Math.round((plan.completedPrayers / plan.targetPrayers) * 100))
+                : 0;
+
+            if (plan.completed) {
+                return { completed: true, pct: 100, dailyTarget: 0, endDate: null, graceLeft: 0, remaining: 0 };
+            }
+
+            const schedule = buildSchedule(plan);
+            const todayRow = schedule.days.find(d => d.dateStr === today);
+            const firstActive = schedule.days.find(d => !d.buffer && d.target > 0);
+            const lastDay = schedule.days[schedule.days.length - 1];
+
+            return {
+                completed: false,
+                pct,
+                isBufferToday: Boolean(todayRow && todayRow.buffer),
+                dailyTarget: todayRow && !todayRow.buffer
+                    ? todayRow.target
+                    : (firstActive ? firstActive.target : 0),
+                breakdown: todayRow && !todayRow.buffer ? todayRow.breakdown : (firstActive || {}).breakdown,
+                endDate: lastDay ? lastDay.dateStr : plan.startDate,
+                graceLeft: schedule.days.filter(d => d.buffer).length,
+                remaining: Math.max(0, plan.targetPrayers - plan.completedPrayers)
+            };
+        }
+
+        function renderPlanSummary() {
+            const card = document.getElementById('planSummaryCard');
+            if (!card) return;
+
+            const summary = planSummary();
+            if (!summary) {
+                card.style.display = 'none';
+                return;
+            }
+            card.style.display = 'block';
+
+            if (summary.completed) {
+                card.innerHTML = `
+                    <div class="plan-summary-head"><span>🗺️ خطتك الحالية</span><small>مكتملة</small></div>
+                    <div class="plan-summary-foot">🎉 أتممت خطتك بالكامل — أنشئ خطة جديدة من تبويب التخطيط.</div>`;
+                return;
+            }
+
+            const dailyText = summary.isBufferToday
+                ? '🛋️ سماح'
+                : `${summary.dailyTarget}`;
+            const breakdown = summary.breakdown && Object.keys(summary.breakdown).length > 1
+                ? Object.keys(summary.breakdown).map(k => `${poolLabel(k)} ${summary.breakdown[k]}`).join(' · ')
+                : '';
+
+            card.innerHTML = `
+                <div class="plan-summary-head">
+                    <span>🗺️ خطتك الحالية</span>
+                    <small>متبقٍ ${summary.remaining} صلاة</small>
+                </div>
+                <div class="plan-summary-grid">
+                    <div class="plan-summary-cell">
+                        <div class="plan-summary-value">${dailyText}</div>
+                        <div class="plan-summary-label">المستهدف اليوم</div>
+                    </div>
+                    <div class="plan-summary-cell">
+                        <div class="plan-summary-value" style="font-size: 0.95rem;">${formatDate(summary.endDate)}</div>
+                        <div class="plan-summary-label">الانتهاء المتوقع</div>
+                    </div>
+                    <div class="plan-summary-cell">
+                        <div class="plan-summary-value">${summary.pct}%</div>
+                        <div class="plan-summary-label">نسبة التقدم</div>
+                    </div>
+                    <div class="plan-summary-cell">
+                        <div class="plan-summary-value">${summary.graceLeft}</div>
+                        <div class="plan-summary-label">أيام السماح المتبقية</div>
+                    </div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${summary.pct}%"></div></div>
+                <div class="plan-summary-foot">${breakdown || 'اضغط للانتقال إلى تفاصيل الخطة'}</div>`;
+        }
+
+        // ============ UI UPDATES ============
+        function updateUI() {
+            updateProfileCard();
+            updateProgressBar();
+            updateStats();
+            renderLedger();
+            renderHistoryLog();
+            renderPlanTargets();
+            updatePlanDisplay();
+            renderPlanSummary();
+
+            const rebalanceModal = document.getElementById('rebalanceModal');
+            if (rebalanceModal && rebalanceModal.classList.contains('active')) {
+                previewRebalance();
+            }
+
+            const challengeModal = document.getElementById('challengeModal');
+            if (challengeModal && challengeModal.classList.contains('active')) {
+                renderChallengeModal();
+            }
+        }
+
+        function updateProfileCard() {
+            document.getElementById('userRank').textContent = getRankTitle();
+            document.getElementById('userLevel').textContent = `المستوى ${state.level} • ${state.xp} نقطة`;
+            document.getElementById('streakDisplay').textContent = state.streak;
+            document.getElementById('freezeCount').textContent = state.freezeCount;
+
+            const freezeStat = document.getElementById('freezeStat');
+            if (freezeStat) freezeStat.style.display = shieldIsRelevant() ? '' : 'none';
+
+            renderChallengeStat();
+        }
+
+        function updateProgressBar() {
+            const pct = state.totalRequired > 0 ? (state.totalCompleted / state.totalRequired) * 100 : 0;
+            document.getElementById('progressFill').style.width = Math.min(100, pct) + '%';
+            document.getElementById('headerProgressPercent').textContent = `${Math.min(100, Math.round(pct))}%`;
+            document.getElementById('progressText').textContent =
+                `${state.totalCompleted} من ${state.totalRequired} صلوات`;
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').textContent = state.totalRequired;
+            document.getElementById('completedCount').textContent = state.totalCompleted;
+            document.getElementById('remainingCount').textContent = totalRemaining();
+        }
+
+        function renderLedger() {
+            const grid = document.getElementById('ledgerGrid');
+            if (!grid) return;
+            grid.innerHTML = BASE_PRAYERS.map(p => {
+                const left = remainingOf(p);
+                const breakdown = PRAYER_TYPES
+                    .map(t => `${TYPE_META[t].label} ${remainingOfType(p, t)}`)
+                    .join(' · ');
+                return `
+                    <div class="ledger-cell ${left === 0 ? 'clear' : ''}">
+                        <div class="ledger-name">${PRAYER_ICONS[p]} ${p}</div>
+                        <div class="ledger-remaining">${left}</div>
+                        <div class="ledger-types">${breakdown}</div>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            if (!grid) return;
+            grid.innerHTML = ACHIEVEMENTS.map(ach => {
+                const unlocked = state.unlockedAchievements.includes(ach.id);
+                return `
+                    <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-name">${ach.name}</div>
+                        <div class="achievement-desc">${ach.desc}</div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ============ DATA MANAGEMENT ============
+        const SCHEMA_VERSION = 3;
+        const APP_SIGNATURE = 'purity-tracker';
+
+        function exportData() {
+            const payload = { ...state, app: APP_SIGNATURE, schemaVersion: SCHEMA_VERSION };
+            const dataStr = JSON.stringify(payload, null, 2);
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(dataStr));
+            element.setAttribute('download', `الطريق_للنقاء_${getLocalDateStr()}.json`);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            showToast('✅ تم تصدير البيانات');
+        }
+
+        // ============ JSON SCHEMA VALIDATION ============
+        const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+        const STATE_SCHEMA = {
+            xp: 'int', level: 'int', streak: 'int', maxStreak: 'int',
+            freezeCount: 'int', plansCompleted: 'int', challengesCompleted: 'int',
+            lastLogDate: 'date?', nextFreezeDate: 'date?', lastShieldUsedAt: 'number?',
+            history: 'array', unlockedAchievements: 'array', shieldedDates: 'array',
+            plan: 'object?', challenge: 'object?'
+        };
+
+        function isInt(v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v; }
+
+        function checkField(key, value, rule) {
+            const optional = rule.endsWith('?');
+            const base = optional ? rule.slice(0, -1) : rule;
+            if (value === undefined) return null;              // absent → default is used
+            if (value === null) return optional ? null : `الحقل "${key}" لا يمكن أن يكون فارغاً`;
+
+            switch (base) {
+                case 'int':
+                    if (!isInt(value) || value < 0) return `الحقل "${key}" يجب أن يكون رقماً صحيحاً غير سالب`;
+                    break;
+                case 'number':
+                    if (typeof value !== 'number' || !isFinite(value)) return `الحقل "${key}" يجب أن يكون رقماً`;
+                    break;
+                case 'date':
+                    if (typeof value !== 'string' || !DATE_RE.test(value) || isNaN(parseLocalDate(value).getTime())) {
+                        return `الحقل "${key}" يجب أن يكون تاريخاً بصيغة YYYY-MM-DD`;
+                    }
+                    break;
+                case 'array':
+                    if (!Array.isArray(value)) return `الحقل "${key}" يجب أن يكون قائمة`;
+                    break;
+                case 'object':
+                    if (typeof value !== 'object' || Array.isArray(value)) return `الحقل "${key}" يجب أن يكون كائناً`;
+                    break;
+            }
+            return null;
+        }
+
+        function validateHistoryEntry(item, i) {
+            const at = `القيد رقم ${i + 1}`;
+            if (!item || typeof item !== 'object' || Array.isArray(item)) return `${at} في السجل غير صحيح`;
+            if (typeof item.prayer !== 'string' || !item.prayer.trim()) return `${at}: اسم صلاة غير صحيح`;
+
+            const knownPrayer = BASE_PRAYERS.includes(item.prayer) || Object.keys(COMBINED_PRAYERS).includes(item.prayer);
+            if (!knownPrayer) return `${at}: صلاة غير معروفة (${item.prayer})`;
+
+            if (item.type !== undefined && !PRAYER_TYPES.includes(item.type)) return `${at}: نوع صلاة غير معروف`;
+            if (typeof item.date !== 'string' || !DATE_RE.test(item.date)) return `${at}: تاريخ غير صحيح`;
+            if (isNaN(parseLocalDate(item.date).getTime())) return `${at}: تاريخ غير موجود`;
+            if (item.kind !== undefined && !['completed', 'adjust'].includes(item.kind)) return `${at}: نوع قيد غير معروف`;
+            if (item.kind === 'adjust') {
+                if (!isInt(item.count) || item.count <= 0) return `${at}: عدد تعديل الذمة غير صحيح`;
+                if (item.sign !== undefined && item.sign !== 1 && item.sign !== -1) return `${at}: إشارة التعديل غير صحيحة`;
+            }
+            if (item.xp !== undefined && (!isInt(item.xp) || item.xp < 0)) return `${at}: نقاط الخبرة غير صحيحة`;
+            return null;
+        }
+
+        function validatePlan(plan) {
+            if (!isInt(plan.targetPrayers) || plan.targetPrayers <= 0) return 'هدف الخطة غير صحيح';
+            if (!isInt(plan.targetDays) || plan.targetDays <= 0) return 'عدد أيام الخطة غير صحيح';
+            if (typeof plan.startDate !== 'string' || !DATE_RE.test(plan.startDate)) return 'تاريخ بداية الخطة غير صحيح';
+            if (plan.mode !== undefined && !['all', 'prayers'].includes(plan.mode)) return 'نوع الخطة غير معروف';
+            if (plan.targets) {
+                if (typeof plan.targets !== 'object') return 'أهداف الخطة غير صحيحة';
+                for (const p of Object.keys(plan.targets)) {
+                    if (!BASE_PRAYERS.includes(p)) return `صلاة غير معروفة في الخطة (${p})`;
+                    if (!isInt(plan.targets[p]) || plan.targets[p] <= 0) return `هدف صلاة ${p} غير صحيح`;
+                }
+            }
+            if (plan.bufferDays !== undefined) {
+                if (!Array.isArray(plan.bufferDays)) return 'أيام السماح في الخطة غير صحيحة';
+                if (plan.bufferDays.length > MAX_BUFFER_DAYS) return `أيام السماح تتجاوز الحد (${MAX_BUFFER_DAYS})`;
+                if (plan.bufferDays.some(d => !isInt(d) || d < 0 || d > 6)) return 'أحد أيام السماح خارج النطاق';
+            }
+            return null;
+        }
+
+        function validateChallenge(c) {
+            if (!PRAYER_TYPES.includes(c.type)) return 'نوع التحدي غير معروف';
+            if (!isInt(c.target) || c.target <= 0) return 'هدف التحدي غير صحيح';
+            if (typeof c.startedAt !== 'number' || typeof c.expiresAt !== 'number') return 'توقيت التحدي غير صحيح';
+            if (c.expiresAt <= c.startedAt) return 'مدة التحدي غير منطقية';
+            if (!['active', 'done', 'expired'].includes(c.status)) return 'حالة التحدي غير معروفة';
+            return null;
+        }
+
+        // Full pre-flight check: nothing is written to localStorage until this
+        // returns null.
+        function validateImportedState(data) {
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                return 'الملف لا يحتوي على بيانات صحيحة';
+            }
+
+            // At least one of the core keys must be present, otherwise this is
+            // simply not one of our backups.
+            if (data.history === undefined && data.xp === undefined && data.plan === undefined) {
+                return 'هذا الملف لا يبدو نسخة احتياطية من «الطريق للنقاء»';
+            }
+
+            if (data.schemaVersion !== undefined && (!isInt(data.schemaVersion) || data.schemaVersion > SCHEMA_VERSION)) {
+                return 'الملف من إصدار أحدث من التطبيق — حدّث التطبيق أولاً';
+            }
+
+            for (const key of Object.keys(STATE_SCHEMA)) {
+                const error = checkField(key, data[key], STATE_SCHEMA[key]);
+                if (error) return error;
+            }
+
+            if (Array.isArray(data.history)) {
+                if (data.history.length > 100000) return 'السجل كبير بصورة غير معقولة';
+                for (let i = 0; i < data.history.length; i++) {
+                    const error = validateHistoryEntry(data.history[i], i);
+                    if (error) return error;
+                }
+            }
+
+            if (Array.isArray(data.shieldedDates)) {
+                for (const d of data.shieldedDates) {
+                    if (typeof d !== 'string' || !DATE_RE.test(d)) return 'أحد تواريخ دروع الحماية غير صحيح';
+                }
+            }
+
+            if (Array.isArray(data.unlockedAchievements)) {
+                for (const id of data.unlockedAchievements) {
+                    if (typeof id !== 'string') return 'بيانات الإنجازات في الملف غير صحيحة';
+                }
+            }
+
+            if (data.plan) {
+                const error = validatePlan(data.plan);
+                if (error) return error;
+            }
+
+            if (data.challenge) {
+                const error = validateChallenge(data.challenge);
+                if (error) return error;
+            }
+
+            if (isInt(data.level) && isInt(data.xp) && data.level > Math.floor(data.xp / XP_PER_LEVEL) + 1) {
+                return 'المستوى في الملف لا يتوافق مع نقاط الخبرة';
+            }
+
+            return null;
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    const validationError = validateImportedState(imported);
+                    if (validationError) {
+                        showToast('❌ ' + validationError);
+                        return;
+                    }
+
+                    const clean = { ...imported };
+                    delete clean.app;
+                    delete clean.schemaVersion;
+
+                    state = { ...blankState(), ...clean };
+                    migrateState();
+                    recalcTotals(true);
+                    saveState();
+                    updateUI();
+                    showToast('✅ تم استيراد البيانات بنجاح');
+
+                    // Let the toast be seen before the reload wipes it off screen.
+                    setTimeout(() => location.reload(), 1500);
+                } catch (err) {
+                    console.error('خطأ في استيراد البيانات:', err);
+                    showToast('❌ خطأ في قراءة الملف');
+                }
+            };
+            reader.onerror = () => showToast('❌ تعذّر قراءة الملف');
+            reader.readAsText(file);
+        }
+
+        function showResetConfirm() {
+            document.getElementById('resetConfirm').style.display = 'block';
+        }
+
+        function confirmReset() {
+            const confirmInput = document.getElementById('resetConfirmText');
+            if (!confirmInput) return;
+
+            if (confirmInput.value === 'تأكيد') {
+                if (confirm('هل أنت متأكد؟ سيتم حذف جميع البيانات نهائياً ولا يمكن استرجاعها!')) {
+                    state = blankState();
+                    localStorage.clear();
+                    showToast('🔄 تم حذف جميع البيانات');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            } else {
+                showToast('❌ نص التأكيد غير صحيح');
+            }
+        }
+
+        function exportAchievements() {
+            const summary = `
+بطاقة إنجازي 🏆
+═════════════════
+المستوى: ${state.level}
+الرتبة: ${getRankTitle()}
+الخبرة: ${state.xp} نقطة
+أطول شعلة: ${state.maxStreak} يوم
+التحديات المكتملة: ${state.challengesCompleted || 0}
+الصلوات المقضية: ${state.totalCompleted}
+المتبقي في الذمة: ${totalRemaining()}
+الإنجازات المفتوحة: ${state.unlockedAchievements.length}/${ACHIEVEMENTS.length}
+
+تم إنشاؤها: ${formatDate(getLocalDateStr())}
+            `;
+
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(summary));
+            element.setAttribute('download', 'بطاقة_الإنجاز.txt');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            showToast('📊 تم تصدير البطاقة');
+        }
+
+        // ============ UTILITIES ============
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showConfetti() {
+            for (let i = 0; i < 20; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = ['var(--primary-medium)', 'var(--accent-gold)', '#FF6B6B'][Math.floor(Math.random() * 3)];
+                document.body.appendChild(confetti);
+
+                const duration = Math.random() * 2 + 2;
+                confetti.style.animation = `slideUp ${duration}s ease-out forwards`;
+                setTimeout(() => confetti.remove(), duration * 1000);
+            }
+        }
+
+        function rotateDailyQuote() {
+            const today = new Date().toDateString();
+            const stored = localStorage.getItem('lastQuoteDate');
+            if (stored !== today) {
+                const quote = DAILY_QUOTES[Math.floor(Math.random() * DAILY_QUOTES.length)];
+                document.getElementById('motivationalText').textContent = quote.text;
+                document.getElementById('motivationalSource').textContent = quote.source;
+                localStorage.setItem('lastQuoteDate', today);
+            }
+        }
+
+        // ============ PWA (MANIFEST + SERVICE WORKER, ALL INLINE) ============
+        let deferredInstallPrompt = null;
+
+        function makeIcon(size, maskable) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            const grad = ctx.createLinearGradient(0, 0, size, size);
+            grad.addColorStop(0, '#1E3A1E');
+            grad.addColorStop(1, '#4A7A3F');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
+
+            ctx.fillStyle = '#C5A059';
+            ctx.font = `bold ${Math.round(size * (maskable ? 0.4 : 0.52))}px Cairo, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('نـ', size / 2, size / 2);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        function injectManifest() {
+            try {
+                const icons = [
+                    { src: makeIcon(192), sizes: '192x192', type: 'image/png', purpose: 'any' },
+                    { src: makeIcon(512), sizes: '512x512', type: 'image/png', purpose: 'any' },
+                    { src: makeIcon(512, true), sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+                ];
+
+                const manifest = {
+                    name: 'الطريق للنقاء',
+                    short_name: 'الطريق للنقاء',
+                    description: 'متتبع الصلوات المفروضة والمتراكمة',
+                    lang: 'ar',
+                    dir: 'rtl',
+                    start_url: location.pathname + location.search,
+                    scope: './',
+                    display: 'standalone',
+                    orientation: 'portrait',
+                    background_color: '#FDFBF7',
+                    theme_color: '#1E3A1E',
+                    icons: icons
+                };
+
+                const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+                const link = document.createElement('link');
+                link.rel = 'manifest';
+                link.href = URL.createObjectURL(blob);
+                document.head.appendChild(link);
+
+                // iOS ignores the manifest and reads this instead.
+                const apple = document.createElement('link');
+                apple.rel = 'apple-touch-icon';
+                apple.href = icons[0].src;
+                document.head.appendChild(apple);
+
+                const favicon = document.createElement('link');
+                favicon.rel = 'icon';
+                favicon.type = 'image/png';
+                favicon.href = icons[0].src;
+                document.head.appendChild(favicon);
+            } catch (err) {
+                console.warn('تعذّر توليد ملف البيان:', err);
+            }
+        }
+
+        // Cache-first for everything already seen, so a second launch works with
+        // no network at all. The app is a single file, so one cached document is
+        // the whole app.
+        const SERVICE_WORKER_SOURCE = `
+            const CACHE = 'purity-tracker-v1';
+            self.addEventListener('install', (e) => { self.skipWaiting(); });
+            self.addEventListener('activate', (e) => {
+                e.waitUntil(caches.keys().then(keys =>
+                    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+                ).then(() => self.clients.claim()));
+            });
+            self.addEventListener('fetch', (e) => {
+                if (e.request.method !== 'GET') return;
+                e.respondWith(
+                    caches.match(e.request).then(cached => {
+                        const network = fetch(e.request).then(res => {
+                            if (res && res.status === 200 && res.type !== 'opaque') {
+                                const copy = res.clone();
+                                caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+                            }
+                            return res;
+                        }).catch(() => cached);
+                        return cached || network;
+                    })
+                );
+            });
+        `;
+
+        function setPwaStatus(text) {
+            const el = document.getElementById('pwaStatus');
+            if (el) el.textContent = text;
+        }
+
+        function registerServiceWorker() {
+            if (!('serviceWorker' in navigator)) {
+                setPwaStatus('المتصفح لا يدعم العمل دون إنترنت.');
+                return;
+            }
+            if (!location.protocol.startsWith('http')) {
+                setPwaStatus('التطبيق ملف واحد يعمل دون إنترنت بالفعل (افتحه عبر رابط لتفعيل التخزين المؤقت الكامل).');
+                return;
+            }
+
+            try {
+                const blob = new Blob([SERVICE_WORKER_SOURCE], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(url, { scope: './' })
+                    .then(() => setPwaStatus('✅ مفعّل — التطبيق يعمل دون إنترنت.'))
+                    .catch(() => {
+                        // Some browsers refuse blob: worker scripts. The app is a
+                        // single self-contained file, so it still runs offline
+                        // from the normal browser cache.
+                        setPwaStatus('التخزين المؤقت غير متاح هنا، لكن التطبيق ملف واحد مكتفٍ ذاتياً ويعمل دون إنترنت.');
+                    });
+            } catch (err) {
+                setPwaStatus('تعذّر تفعيل التخزين المؤقت في هذا المتصفح.');
+            }
+        }
+
+        function promptInstall() {
+            if (!deferredInstallPrompt) {
+                showToast('استخدم قائمة المتصفح ← «إضافة إلى الشاشة الرئيسية»');
+                return;
+            }
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.finally(() => {
+                deferredInstallPrompt = null;
+                const row = document.getElementById('installRow');
+                if (row) row.style.display = 'none';
+            });
+        }
+
+        function setupPWA() {
+            injectManifest();
+            registerServiceWorker();
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredInstallPrompt = e;
+                const row = document.getElementById('installRow');
+                if (row) row.style.display = 'flex';
+            });
+
+            window.addEventListener('appinstalled', () => {
+                deferredInstallPrompt = null;
+                const row = document.getElementById('installRow');
+                if (row) row.style.display = 'none';
+                showToast('📱 تم تثبيت التطبيق على جهازك');
+            });
+
+            // iOS Safari has no install event; point the user at the share sheet.
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+            if (isIOS && !standalone) {
+                const row = document.getElementById('installRow');
+                if (row) row.style.display = 'flex';
+            }
+        }
+
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            setupPWA();
+        });
+    </script>
+</body>
+</html>
